@@ -19,25 +19,21 @@ sim_deploy_dir=$(mktemp --tmpdir=$tmp_base -d ${prefix}_sim_deploy_dir_XXXXXXXX)
 
 # create fake deploy_dir (in real deploy: /home/user)
 echo initial_a > $deploy_dir/a
-echo initial_b > $deploy_dir/b
 
 echo "src_dir: $src_dir"
 tree -al $src_dir
 echo "deploy_dir: $deploy_dir"
 tree -al $deploy_dir
 
-
 ../install.sh -s -S $src_dir --sim-deploy-dir=$sim_deploy_dir -d $deploy_dir -k
 
+echo "sim_deploy_dir: $sim_deploy_dir"
 tree -al $sim_deploy_dir
 
-assert_file_equal $sim_deploy_dir/b $src_dir/common/user/10/b
-assert_file_equal $sim_deploy_dir/a $src_dir/common/user/20/a
-assert_file_equal $sim_deploy_dir/c $src_dir/common/user/10/c
-assert_file_equal $sim_deploy_dir/dir/file $src_dir/common/user/20/dir/file
-assert_link_equal $sim_deploy_dir/link_to_a $src_dir/common/user/10/link_to_a
-assert_file_equal $sim_deploy_dir/link_to_a $src_dir/common/user/20/a
-
+assert_file_equal $sim_deploy_dir/a $src_dir/user/a
+assert_file_equal $sim_deploy_dir/dir/file $src_dir/user/dir/file
+assert_link_equal $sim_deploy_dir/link_to_a $src_dir/user/link_to_a
+assert_file_equal $sim_deploy_dir/link_to_a $src_dir/user/a
 
 # test deletion of simulate dir
 ../install.sh -s -S $src_dir --sim-deploy-dir=${sim_deploy_dir}_2 -d $deploy_dir

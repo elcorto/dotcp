@@ -23,12 +23,12 @@ tree -al $src_dir
 echo "deploy_dir: $deploy_dir"
 tree -al $deploy_dir
 
-../install.sh -S $src_dir -d $deploy_dir
+../dotcp.sh -S $src_dir -d $deploy_dir
 
 assert_file_equal $deploy_dir/a $src_dir/user/a
 assert_file_equal $deploy_dir/dir/file $src_dir/user/dir/file
 assert_link_equal $deploy_dir/link_to_a $src_dir/user/link_to_a
 assert_file_equal $deploy_dir/link_to_a $src_dir/user/a
 
-# repeat install, should install nothing at all
-../install.sh -S $src_dir -d $deploy_dir
+# repeat dotcp, should cp nothing at all
+../dotcp.sh -S $src_dir -d $deploy_dir

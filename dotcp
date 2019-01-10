@@ -88,8 +88,8 @@ Note: due to cmd line parsing, -vs or -vp doesn't work, always use -v/-vv last.
 EOF
 }
 
-here=$(dirname $0)
-. ./$here/tools/common.sh
+here=$(dirname $(readlink -f $0))
+. $here/tools/common.sh
 
 _hsh(){
     sha1sum $1 | cut -f1 -d ' '

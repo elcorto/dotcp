@@ -10,7 +10,7 @@ test_cleanup(){
 trap test_cleanup EXIT STOP INT QUIT KILL ABRT TERM HUP
 
 src_dir=src
-prefix=dotfiles_$(basename $0)
+prefix=dotcp_$(basename $0)
 tmp_base=/tmp
 
 link_tgt=$(mktemp --tmpdir=$tmp_base -d ${prefix}_link_target_XXXXXXXX)

@@ -7,12 +7,12 @@ simulate=false
 verbose=0
 deploy_dir=$HOME
 usepager=false
-src_dr_base=$(dirname $0)/../dotfiles/config
+src_dr_base=${DOTCP_FILEBASE:-$HOME/dotfiles/config}
 sim_deploy_dir=
 reverse_cp_commands=false
 keep_sim_deploy_dir=false
 only_existing=false
-bak_suffix='.bak-dotfiles-install'
+bak_suffix='.bak-dotcp'
 exclude=''
 include=''
 
@@ -21,18 +21,18 @@ usage(){
     cat <<EOF
 $prog <options>
 
-Copy config files and dirs from <src_dr> (default:
-$src_dr_base/{user,root}) to <deploy_dir> (default: deploy_dir=$deploy_dir).
+Copy config files and dirs from <src_dr> (default: \$DOTCP_FILEBASE/{user,root})
+to <deploy_dir> (default: deploy_dir=$deploy_dir).
 
 Only individual files are copied, so <src_dr>/.ssh/config will only
 overwrite ~/.ssh/config and not any other file (like ssh keys) in there.
 
 Depending on who runs this script, we set:
 
-    user    src_dr                  deploy_dir
-    ----    -------                 ----------
-    user    <src_dr_base>/user      $deploy_dir
-    root    <src_dr_base>/root      /
+    who     src_dr                  deploy_dir
+    ---     ------                  ----------
+    user    \$DOTCP_FILEBASE/user    \$HOME
+    root    \$DOTCP_FILEBASE/root    /
 
 A backup of each target is made if necessary (with suffix '$bak_suffix'). To
 find and delete old backup files, use something like
@@ -46,14 +46,14 @@ options
 -k : keep simulate files
 -e : treat only files which already exist
 -c : run reverse copy commands (target -> this repo)
--S : source base dir [$src_dr_base]
+-S : source base dir [default: $src_dr_base, usually \$DOTCP_FILEBASE]
 -v : verbose, shows diffs
 -vv : more verbose
 -p : use pager
 -x : exclude regex
 -i : include regex, use either -i or -x
 -d : config files will be copied to <deploy_dir>/
-    [$deploy_dir]
+    [default: $deploy_dir]
 --sim-deploy-dir : temp dir for -s, default is auto-generated
 
 
@@ -88,7 +88,8 @@ Note: due to cmd line parsing, -vs or -vp doesn't work, always use -v/-vv last.
 EOF
 }
 
-. ./$(dirname $0)/tools/common.sh
+here=$(dirname $0)
+. ./$here/tools/common.sh
 
 _hsh(){
     sha1sum $1 | cut -f1 -d ' '
@@ -119,7 +120,6 @@ filetype(){
 }
 
 
-here=$(dirname $0)
 ft_file=$(filetype $here/tools/filetypes/dir/file)
 ft_link=$(filetype $here/tools/filetypes/dir/link)
 ft_dir=$(filetype $here/tools/filetypes/dir)
@@ -236,7 +236,7 @@ main(){
 
     if $simulate; then
         if [ -z "$sim_deploy_dir" ]; then
-            sim_deploy_dir=$(mktemp -d /tmp/dotfiles_simulate_XXXXXXXX)
+            sim_deploy_dir=$(mktemp -d /tmp/dotcp_simulate_XXXXXXXX)
         fi
         echo "simulate: installing into $sim_deploy_dir"
     fi
@@ -246,6 +246,7 @@ main(){
     echo "files/links to copy"
 
     # dotfiles/config/user/.foo/file
+    # ^^^^^^^^^^^^^^^-------------------- $DOTCP_FILEBASE
     # ^^^^^^^^^^^^^^^^^^^^--------------- src_dr
     #                      ^^^^^^^^^----- install_path
     #
@@ -320,7 +321,7 @@ main(){
             # copying new file
             # backup.sh -P : copy links as links
             if ! $simulate && exists "$tgt"; then
-                $(dirname $0)/tools/backup.sh -dP -p $bak_suffix $tgt
+                $here/tools/backup.sh -dP -p $bak_suffix $tgt
             fi
             mkdir -p $vopt $(dirname $tgt)
             cp $cp_opts $vopt $src $tgt

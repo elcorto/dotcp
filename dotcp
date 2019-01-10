@@ -7,7 +7,7 @@ simulate=false
 verbose=0
 deploy_dir=$HOME
 usepager=false
-src_dr_base=${DOTCP_FILEBASE:-$HOME/dotfiles/config}
+src_dr_base=${DOTCP_FILEBASE:-$HOME/dotfiles}
 sim_deploy_dir=
 reverse_cp_commands=false
 keep_sim_deploy_dir=false
@@ -22,7 +22,7 @@ usage(){
 $prog <options>
 
 Copy config files and dirs from <src_dr> (default: \$DOTCP_FILEBASE/{user,root})
-to <deploy_dir> (default: deploy_dir=$deploy_dir).
+to <deploy_dir> (default: deploy_dir=\$HOME).
 
 Only individual files are copied, so <src_dr>/.ssh/config will only
 overwrite ~/.ssh/config and not any other file (like ssh keys) in there.
@@ -45,15 +45,15 @@ options
 -s : simulate
 -k : keep simulate files
 -e : treat only files which already exist
--c : run reverse copy commands (target -> this repo)
--S : source base dir [default: $src_dr_base, usually \$DOTCP_FILEBASE]
+-c : run reverse copy commands (target -> dotfiles repo)
+-S : source base dir [default: \$DOTCP_FILEBASE or \$HOME/dotfiles]
 -v : verbose, shows diffs
 -vv : more verbose
 -p : use pager
 -x : exclude regex
 -i : include regex, use either -i or -x
 -d : config files will be copied to <deploy_dir>/
-    [default: $deploy_dir]
+    [default: \$HOME]
 --sim-deploy-dir : temp dir for -s, default is auto-generated
 
 

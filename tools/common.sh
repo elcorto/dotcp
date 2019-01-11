@@ -10,7 +10,14 @@ contains_link(){
     done
 }
 
+
+_diff(){
+    diff -Nau $@
+}
+
+
 _assert(){
+    [ $# -eq 4 ] || err "_assert: need 4 args"
     local aa=$1
     local bb=$2
     local want_retcode=$3
@@ -28,8 +35,9 @@ _assert(){
 
 
 _assert_file(){
-    _assert $1 $2 $3 diff
+    _assert $1 $2 $3 _diff
 }
+
 
 _chk_link_path(){
     aa=$(readlink $1)
@@ -37,6 +45,7 @@ _chk_link_path(){
     echo "_chk_link_path: aa=$aa bb=$bb"
     [ "$aa" = "$bb" ]
 }
+
 
 assert_file_equal(){
     _assert_file $1 $2 0

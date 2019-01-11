@@ -1,9 +1,17 @@
 #!/bin/sh
 
-log=$(mktemp /tmp/dotfiles_test_XXXXXXX.log)
+# usage:
+#   run all tests:
+#       $ ./this.sh
+#   run only test_foo.sh
+#       $ ./this.sh test_foo.sh
+
+log=$(mktemp /tmp/dotcp_test_XXXXXXX.log)
 echo "logfile: $log"
 
-for fn in test_*.sh; do
+[ -z $@ ] && test_files=test_*.sh || test_files=$@
+
+for fn in $test_files; do
     cat >> $log << eof
 ==============================================================================
 $fn

@@ -83,7 +83,9 @@ Dotfiles repo layout
 
 Have the files to copy in a dir ``$DOTCP_DOTFILES``, typically this will be a
 git repo with your dotfiles (or any files you need to keep in sync, for that
-matter). We assume::
+matter). We assume:
+
+.. code-block:: sh
 
    $DOTCP_DOTFILES/user
    $DOTCP_DOTFILES/root
@@ -91,7 +93,6 @@ matter). We assume::
 where root is optional and only used if you run ``dotcp`` as root.
 
 Here is an example layout of a dotfiles repo (``DOTCP_DOTFILES=/path/to/dotfiles/config``)::
-
 
    /path/to/dotfiles/config/
    ├── root
@@ -158,6 +159,18 @@ Here is an example layout of a dotfiles repo (``DOTCP_DOTFILES=/path/to/dotfiles
        │       └── README.rst
        └── .zshrc
 
+Tests
+=====
+
+We have some basic regression tests.
+
+.. code-block:: sh
+
+    $ cd test
+    # run all tests
+    $ ./run.sh
+    # run single test
+    $ ./run.sh test_foo.sh
 
 Notes
 =====

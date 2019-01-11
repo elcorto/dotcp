@@ -36,10 +36,10 @@ Usage
        user    $DOTCP_FILEBASE/user    $HOME
        root    $DOTCP_FILEBASE/root    /
 
-   A backup of each target is made if necessary (with suffix '.bak-dotcp'). To
+   A backup of each target is made if necessary (with suffix '.bak-dotcp-'). To
    find and delete old backup files, use something like
 
-       find ~/ -maxdepth 5 -wholename "*.bak-dotcp*" | xargs rm -rv
+       find ~/ -maxdepth 5 -wholename "*.bak-dotcp-*" | xargs rm -rv
 
    options
    -------
@@ -62,30 +62,31 @@ Usage
    examples
    --------
    Simulate (-s) what would be copied.
-       ./dotcp -s
+       dotcp -s
 
    Simulate and show diffs (-v).
-       ./dotcp -sv
+       dotcp -sv
 
    The same, but view the diff in a pager (vim currently)
-       ./dotcp -spv
+       dotcp -spv
 
    Show also unchanged files (-vv)
 
-       ./dotcp -spvv
-       ./dotcp -sp -vv
+       dotcp -spvv
+       dotcp -sp -vv
 
-   If you have updated target files and need to add the changes to this repo:
-   Show commands to copy changed target files to this repo (i.e. the reverse of
-   installing them)
+   If you have updated target files and need to add the changes to the dotfiles
+   repo. Show commands to copy changed target files the dotfiles repo (i.e. the
+   reverse of installing them)
 
-       ./dotcp -sc
+       dotcp -sc
 
    and actually execute them (remove simulate):
 
-       ./dotcp -c
+       dotcp -c
 
    Note: due to cmd line parsing, -vs or -vp doesn't work, always use -v/-vv last.
+
 
 Dotfiles repo layout
 ====================

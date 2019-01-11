@@ -12,7 +12,7 @@ sim_deploy_dir=
 reverse_cp_commands=false
 keep_sim_deploy_dir=false
 only_existing=false
-bak_suffix='.bak-dotcp'
+bak_suffix='.bak-dotcp-'
 exclude=''
 include=''
 
@@ -60,28 +60,28 @@ options
 examples
 --------
 Simulate (-s) what would be copied.
-    ./$prog -s
+    $prog -s
 
 Simulate and show diffs (-v).
-    ./$prog -sv
+    $prog -sv
 
 The same, but view the diff in a pager (vim currently)
-    ./$prog -spv
+    $prog -spv
 
 Show also unchanged files (-vv)
 
-    ./$prog -spvv
-    ./$prog -sp -vv
+    $prog -spvv
+    $prog -sp -vv
 
-If you have updated target files and need to add the changes to this repo:
-Show commands to copy changed target files to this repo (i.e. the reverse of
-installing them)
+If you have updated target files and need to add the changes to the dotfiles
+repo. Show commands to copy changed target files the dotfiles repo (i.e. the
+reverse of installing them)
 
-    ./$prog -sc
+    $prog -sc
 
 and actually execute them (remove simulate):
 
-    ./$prog -c
+    $prog -c
 
 Note: due to cmd line parsing, -vs or -vp doesn't work, always use -v/-vv last.
 

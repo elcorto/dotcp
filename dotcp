@@ -7,7 +7,7 @@ simulate=false
 verbose=0
 deploy_dir=$HOME
 usepager=false
-src_dr_base=${DOTCP_FILEBASE:-$HOME/dotfiles}
+src_dr_base=${DOTCP_DOTFILES:-$HOME/dotfiles}
 sim_deploy_dir=
 reverse_cp_commands=false
 keep_sim_deploy_dir=false
@@ -21,7 +21,7 @@ usage(){
     cat <<EOF
 $prog <options>
 
-Copy config files and dirs from <src_dr> (default: \$DOTCP_FILEBASE/{user,root})
+Copy config files and dirs from <src_dr> (default: \$DOTCP_DOTFILES/{user,root})
 to <deploy_dir> (default: deploy_dir=\$HOME).
 
 Only individual files are copied, so <src_dr>/.ssh/config will only
@@ -31,8 +31,8 @@ Depending on who runs this script, we set:
 
     who     src_dr                  deploy_dir
     ---     ------                  ----------
-    user    \$DOTCP_FILEBASE/user    \$HOME
-    root    \$DOTCP_FILEBASE/root    /
+    user    \$DOTCP_DOTFILES/user    \$HOME
+    root    \$DOTCP_DOTFILES/root    /
 
 A backup of each target is made if necessary (with suffix '$bak_suffix'). To
 find and delete old backup files, use something like
@@ -46,7 +46,7 @@ options
 -k : keep simulate files
 -e : treat only files which already exist
 -c : run reverse copy commands (target -> dotfiles repo)
--S : source base dir [default: \$DOTCP_FILEBASE or \$HOME/dotfiles]
+-S : source base dir [default: \$DOTCP_DOTFILES or \$HOME/dotfiles]
 -v : verbose, shows diffs
 -V : more verbose
 -p : use pager
@@ -235,7 +235,7 @@ main(){
     echo "files/links to copy"
 
     # dotfiles/config/user/.foo/file
-    # ^^^^^^^^^^^^^^^-------------------- $DOTCP_FILEBASE
+    # ^^^^^^^^^^^^^^^-------------------- $DOTCP_DOTFILES
     # ^^^^^^^^^^^^^^^^^^^^--------------- src_dr
     #                      ^^^^^^^^^----- install_path
     #

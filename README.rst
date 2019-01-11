@@ -23,7 +23,7 @@ Usage
 
     dotcp <options>
 
-    Copy config files and dirs from <src_dr> (default: $DOTCP_FILEBASE/{user,root})
+    Copy config files and dirs from <src_dr> (default: $DOTCP_DOTFILES/{user,root})
     to <deploy_dir> (default: deploy_dir=$HOME).
 
     Only individual files are copied, so <src_dr>/.ssh/config will only
@@ -33,8 +33,8 @@ Usage
 
         who     src_dr                  deploy_dir
         ---     ------                  ----------
-        user    $DOTCP_FILEBASE/user    $HOME
-        root    $DOTCP_FILEBASE/root    /
+        user    $DOTCP_DOTFILES/user    $HOME
+        root    $DOTCP_DOTFILES/root    /
 
     A backup of each target is made if necessary (with suffix '.bak-dotcp-'). To
     find and delete old backup files, use something like
@@ -48,7 +48,7 @@ Usage
     -k : keep simulate files
     -e : treat only files which already exist
     -c : run reverse copy commands (target -> dotfiles repo)
-    -S : source base dir [default: $DOTCP_FILEBASE or $HOME/dotfiles]
+    -S : source base dir [default: $DOTCP_DOTFILES or $HOME/dotfiles]
     -v : verbose, shows diffs
     -V : more verbose
     -p : use pager
@@ -81,16 +81,16 @@ Usage
 Dotfiles repo layout
 ====================
 
-Have the files to copy in a dir ``$DOTCP_FILEBASE``, typically this will be a
+Have the files to copy in a dir ``$DOTCP_DOTFILES``, typically this will be a
 git repo with your dotfiles (or any files you need to keep in sync, for that
 matter). We assume::
 
-   $DOTCP_FILEBASE/user
-   $DOTCP_FILEBASE/root
+   $DOTCP_DOTFILES/user
+   $DOTCP_DOTFILES/root
 
 where root is optional and only used if you run ``dotcp`` as root.
 
-Here is an example layout of a dotfiles repo (``DOTCP_FILEBASE=/path/to/dotfiles/config``)::
+Here is an example layout of a dotfiles repo (``DOTCP_DOTFILES=/path/to/dotfiles/config``)::
 
 
    /path/to/dotfiles/config/

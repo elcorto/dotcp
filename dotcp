@@ -48,7 +48,7 @@ options
 -c : run reverse copy commands (target -> dotfiles repo)
 -S : source base dir [default: \$DOTCP_FILEBASE or \$HOME/dotfiles]
 -v : verbose, shows diffs
--vv : more verbose
+-V : more verbose
 -p : use pager
 -x : exclude regex
 -i : include regex, use either -i or -x
@@ -68,23 +68,13 @@ Simulate and show diffs (-v).
 The same, but view the diff in a pager (vim currently)
     $prog -spv
 
-Show also unchanged files (-vv)
-
-    $prog -spvv
-    $prog -sp -vv
-
 If you have updated target files and need to add the changes to the dotfiles
 repo. Show commands to copy changed target files the dotfiles repo (i.e. the
-reverse of installing them)
-
+reverse of installing them):
     $prog -sc
 
 and actually execute them (remove simulate):
-
     $prog -c
-
-Note: due to cmd line parsing, -vs or -vp doesn't work, always use -v/-vv last.
-
 EOF
 }
 
@@ -145,7 +135,7 @@ exists(){
 }
 
 
-cmdline=$(getopt -o hcsS:kpev::d:x:i: -lsim-deploy-dir: -- "$@")
+cmdline=$(getopt -o hcsS:kpevVd:x:i: -lsim-deploy-dir: -- "$@")
 eval set -- "$cmdline"
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -173,11 +163,10 @@ while [ $# -gt 0 ]; do
             reverse_cp_commands=true
             ;;
         -v)
-            case "$2" in
-                "") verbose=1 ;;
-                "v") verbose=2 ;;
-                esac
-            shift
+            verbose=1
+            ;;
+        -V)
+            verbose=2
             ;;
         -d)
             deploy_dir=$2

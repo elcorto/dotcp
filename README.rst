@@ -21,72 +21,62 @@ Usage
 
 ::
 
-   dotcp <options>
+    dotcp <options>
 
-   Copy config files and dirs from <src_dr> (default: $DOTCP_FILEBASE/{user,root})
-   to <deploy_dir> (default: deploy_dir=$HOME).
+    Copy config files and dirs from <src_dr> (default: $DOTCP_FILEBASE/{user,root})
+    to <deploy_dir> (default: deploy_dir=$HOME).
 
-   Only individual files are copied, so <src_dr>/.ssh/config will only
-   overwrite ~/.ssh/config and not any other file (like ssh keys) in there.
+    Only individual files are copied, so <src_dr>/.ssh/config will only
+    overwrite ~/.ssh/config and not any other file (like ssh keys) in there.
 
-   Depending on who runs this script, we set:
+    Depending on who runs this script, we set:
 
-       who     src_dr                  deploy_dir
-       ---     ------                  ----------
-       user    $DOTCP_FILEBASE/user    $HOME
-       root    $DOTCP_FILEBASE/root    /
+        who     src_dr                  deploy_dir
+        ---     ------                  ----------
+        user    $DOTCP_FILEBASE/user    $HOME
+        root    $DOTCP_FILEBASE/root    /
 
-   A backup of each target is made if necessary (with suffix '.bak-dotcp-'). To
-   find and delete old backup files, use something like
+    A backup of each target is made if necessary (with suffix '.bak-dotcp-'). To
+    find and delete old backup files, use something like
 
-       find ~/ -maxdepth 5 -wholename "*.bak-dotcp-*" | xargs rm -rv
+        find ~/ -maxdepth 5 -wholename "*.bak-dotcp-*" | xargs rm -rv
 
-   options
-   -------
-   -h : help
-   -s : simulate
-   -k : keep simulate files
-   -e : treat only files which already exist
-   -c : run reverse copy commands (target -> dotfiles repo)
-   -S : source base dir [default: $DOTCP_FILEBASE or $HOME/dotfiles]
-   -v : verbose, shows diffs
-   -vv : more verbose
-   -p : use pager
-   -x : exclude regex
-   -i : include regex, use either -i or -x
-   -d : config files will be copied to <deploy_dir>/
-       [default: $HOME]
-   --sim-deploy-dir : temp dir for -s, default is auto-generated
+    options
+    -------
+    -h : help
+    -s : simulate
+    -k : keep simulate files
+    -e : treat only files which already exist
+    -c : run reverse copy commands (target -> dotfiles repo)
+    -S : source base dir [default: $DOTCP_FILEBASE or $HOME/dotfiles]
+    -v : verbose, shows diffs
+    -V : more verbose
+    -p : use pager
+    -x : exclude regex
+    -i : include regex, use either -i or -x
+    -d : config files will be copied to <deploy_dir>/
+        [default: $HOME]
+    --sim-deploy-dir : temp dir for -s, default is auto-generated
 
 
-   examples
-   --------
-   Simulate (-s) what would be copied.
-       dotcp -s
+    examples
+    --------
+    Simulate (-s) what would be copied.
+        dotcp -s
 
-   Simulate and show diffs (-v).
-       dotcp -sv
+    Simulate and show diffs (-v).
+        dotcp -sv
 
-   The same, but view the diff in a pager (vim currently)
-       dotcp -spv
+    The same, but view the diff in a pager (vim currently)
+        dotcp -spv
 
-   Show also unchanged files (-vv)
+    If you have updated target files and need to add the changes to the dotfiles
+    repo. Show commands to copy changed target files the dotfiles repo (i.e. the
+    reverse of installing them):
+        dotcp -sc
 
-       dotcp -spvv
-       dotcp -sp -vv
-
-   If you have updated target files and need to add the changes to the dotfiles
-   repo. Show commands to copy changed target files the dotfiles repo (i.e. the
-   reverse of installing them)
-
-       dotcp -sc
-
-   and actually execute them (remove simulate):
-
-       dotcp -c
-
-   Note: due to cmd line parsing, -vs or -vp doesn't work, always use -v/-vv last.
-
+    and actually execute them (remove simulate):
+        dotcp -c
 
 Dotfiles repo layout
 ====================

@@ -36,6 +36,10 @@ Usage
         user    $DOTCP_DOTFILES/user    $HOME
         root    $DOTCP_DOTFILES/root    /
 
+    To run as root, you may use something like
+        sudo -E $(which dotcp) ...
+    to drag $DOTCP_DOTFILES along.
+
     A backup of each target is made if necessary (with suffix '.bak-dotcp-'). To
     find and delete old backup files, use something like
 

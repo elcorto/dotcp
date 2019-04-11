@@ -229,7 +229,8 @@ main(){
 
     if $simulate; then
         if [ -z "$sim_deploy_dir" ]; then
-            sim_deploy_dir=$(mktemp -d /tmp/dotcp_simulate_XXXXXXXX)
+            [ -d /dev/shm ] && tmp_base=/dev/shm || tmp_base=/tmp
+            sim_deploy_dir=$(mktemp -d ${tmp_base}/dotcp_simulate_XXXXXXXX)
         fi
         echo "simulate: installing into $sim_deploy_dir"
     fi

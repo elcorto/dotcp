@@ -36,9 +36,7 @@ Usage
         user    $DOTCP_DOTFILES/user    $HOME
         root    $DOTCP_DOTFILES/root    /
 
-    To run as root, you may use something like
-        sudo -E $(which dotcp) ...
-    to drag $DOTCP_DOTFILES along.
+    To run as root, you can use "dotcp -r" (details below).
 
     A backup of each target is made if necessary (with suffix '.bak-dotcp-'). To
     find and delete old backup files, use something like
@@ -58,6 +56,7 @@ Usage
     -p : use pager
     -x : exclude regex
     -i : include regex, use either -i or -x
+    -r : run as root (sudo -AE ...)
     -d : config files will be copied to <deploy_dir>/
         [default: $HOME]
     --sim-deploy-dir : temp dir for -s, default is auto-generated
@@ -81,6 +80,10 @@ Usage
 
     and actually execute them (remove simulate):
         dotcp -c
+
+    Run as root. This is a shorthand for "sudo -A -E /path/to/dotcp ..." (-E to
+    drag $DOTCP_DOTFILES along, -A b/c we like $SUDO_ASKPASS).
+        dotcp -r
 
 Dotfiles repo layout
 ====================

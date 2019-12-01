@@ -7,85 +7,107 @@ shell script used to keep a dotfiles repo and a target machine in sync.
 Features:
 
 * copy files from a dotfiles repo to a target location (e.g. ``$HOME``)
-* copy target updates back to the dotfiles repo (``-c``, simulate with ``-sc``)
 * check for file updates based on file hashes
 * backup of target files before updates
 * simulate what would be updated (``-s``)
+* copy target updates back to the dotfiles repo (``-c``, simulate with ``-sc``)
 * show diffs between dotfiles repo and target (``-spv``)
 * include/exclude files (``-i``/``-x``).
 * run as root (``-r``)
 
-See ``dotcp -h`` for a full list of options and examples.
-
 Usage
 =====
 
+Copy config files and dirs from ``<source_dir>`` (default: ``$DOTCP_DOTFILES/{user,root}``)
+to ``<deploy_dir>`` (default: ``deploy_dir=$HOME``).
+
+Only individual files are copied, so ``<source_dir>/.ssh/config`` will only
+overwrite ``~/.ssh/config`` and not any other file (like ssh keys) in there.
+
+Depending on who runs this script, we set:
+
+    ====    ====================    ==========
+    who     source_dir              deploy_dir
+    ====    ====================    ==========
+    user    $DOTCP_DOTFILES/user    $HOME
+    root    $DOTCP_DOTFILES/root    /
+    ====    ====================    ==========
+
+To run as root, you can use ``dotcp -r`` (details below).
+
+A backup of each target is made if necessary (with suffix ``.bak-dotcp-``). To
+find and delete old backup files, use something like:
+
+.. code-block:: shell
+
+    $ find ~/ -maxdepth 5 -wholename "*.bak-dotcp-*" | xargs rm -rv
+
+Options
+-------
+
 ::
 
-    dotcp <options>
+    Usage
+        dotcp [options]
 
-    Copy config files and dirs from <src_dr> (default: $DOTCP_DOTFILES/{user,root})
-    to <deploy_dir> (default: deploy_dir=$HOME).
+    Options
+        -h : help
+        -s : simulate
+        -k : keep simulate files
+        -e : treat only files which already exist
+        -c : run reverse copy commands (target -> dotfiles repo)
+        -S : source base dir [default: $DOTCP_DOTFILES or $HOME/dotfiles]
+        -v : verbose, shows diffs
+        -V : more verbose
+        -p : use pager
+        -x : exclude regex
+        -i : include regex, use either -i or -x
+        -r : run as root (using sudo)
+        -d : config files will be copied to <deploy_dir>/
+            [default: $HOME]
+        --sim-deploy-dir : temp dir for -s, default is auto-generated
 
-    Only individual files are copied, so <src_dr>/.ssh/config will only
-    overwrite ~/.ssh/config and not any other file (like ssh keys) in there.
+Examples
+========
 
-    Depending on who runs this script, we set:
+Simulate (-s) what would be copied:
 
-        who     src_dr                  deploy_dir
-        ---     ------                  ----------
-        user    $DOTCP_DOTFILES/user    $HOME
-        root    $DOTCP_DOTFILES/root    /
+.. code-block:: shell
 
-    To run as root, you can use "dotcp -r" (details below).
+    dotcp -s
 
-    A backup of each target is made if necessary (with suffix '.bak-dotcp-'). To
-    find and delete old backup files, use something like
+Simulate and show diffs (``-v``):
 
-        find ~/ -maxdepth 5 -wholename "*.bak-dotcp-*" | xargs rm -rv
+.. code-block:: shell
 
-    options
-    -------
-    -h : help
-    -s : simulate
-    -k : keep simulate files
-    -e : treat only files which already exist
-    -c : run reverse copy commands (target -> dotfiles repo)
-    -S : source base dir [default: $DOTCP_DOTFILES or $HOME/dotfiles]
-    -v : verbose, shows diffs
-    -V : more verbose
-    -p : use pager
-    -x : exclude regex
-    -i : include regex, use either -i or -x
-    -r : run as root (using sudo)
-    -d : config files will be copied to <deploy_dir>/
-        [default: $HOME]
-    --sim-deploy-dir : temp dir for -s, default is auto-generated
+    dotcp -sv
 
+The same, but view the diff in a pager (vim currently):
 
-    examples
-    --------
-    Simulate (-s) what would be copied.
-        dotcp -s
+.. code-block:: shell
 
-    Simulate and show diffs (-v).
-        dotcp -sv
+    dotcp -spv
 
-    The same, but view the diff in a pager (vim currently)
-        dotcp -spv
+If you have changed target files and need to add the changes to the dotfiles
+repo. Show commands to copy changed target files the dotfiles repo (i.e. the
+reverse of installing them):
 
-    If you have updated target files and need to add the changes to the dotfiles
-    repo. Show commands to copy changed target files the dotfiles repo (i.e. the
-    reverse of installing them):
-        dotcp -sc
+.. code-block:: shell
 
-    and actually execute them (remove simulate):
-        dotcp -c
+    dotcp -sc
 
-    Run as root. This is a shorthand for
-        sudo -A --preserve-env=DOTCP_DOTFILES /path/to/dotcp ...
-    (-A b/c we like $SUDO_ASKPASS).
-        dotcp -r
+and actually execute them (remove simulate):
+
+.. code-block:: shell
+
+    dotcp -c
+
+Run as root. This is a shorthand for ``sudo -A --preserve-env=DOTCP_DOTFILES /path/to/dotcp ...``
+(``-A`` b/c we like ``SUDO_ASKPASS``):
+
+.. code-block:: shell
+
+    dotcp -r
 
 Dotfiles repo layout
 ====================

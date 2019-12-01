@@ -20,70 +20,25 @@ run_as_root=false
 
 usage(){
     cat <<EOF
-$prog <options>
+Usage
+    $prog [options]
 
-Copy config files and dirs from <src_dr> (default: \$DOTCP_DOTFILES/{user,root})
-to <deploy_dir> (default: deploy_dir=\$HOME).
-
-Only individual files are copied, so <src_dr>/.ssh/config will only
-overwrite ~/.ssh/config and not any other file (like ssh keys) in there.
-
-Depending on who runs this script, we set:
-
-    who     src_dr                  deploy_dir
-    ---     ------                  ----------
-    user    \$DOTCP_DOTFILES/user    \$HOME
-    root    \$DOTCP_DOTFILES/root    /
-
-To run as root, you can use "$prog -r" (details below).
-
-A backup of each target is made if necessary (with suffix '$bak_suffix'). To
-find and delete old backup files, use something like
-
-    find ~/ -maxdepth 5 -wholename "*$bak_suffix*" | xargs rm -rv
-
-options
--------
--h : help
--s : simulate
--k : keep simulate files
--e : treat only files which already exist
--c : run reverse copy commands (target -> dotfiles repo)
--S : source base dir [default: \$DOTCP_DOTFILES or \$HOME/dotfiles]
--v : verbose, shows diffs
--V : more verbose
--p : use pager
--x : exclude regex
--i : include regex, use either -i or -x
--r : run as root (using sudo)
--d : config files will be copied to <deploy_dir>/
-    [default: \$HOME]
---sim-deploy-dir : temp dir for -s, default is auto-generated
-
-
-examples
---------
-Simulate (-s) what would be copied.
-    $prog -s
-
-Simulate and show diffs (-v).
-    $prog -sv
-
-The same, but view the diff in a pager (vim currently)
-    $prog -spv
-
-If you have updated target files and need to add the changes to the dotfiles
-repo. Show commands to copy changed target files the dotfiles repo (i.e. the
-reverse of installing them):
-    $prog -sc
-
-and actually execute them (remove simulate):
-    $prog -c
-
-Run as root. This is a shorthand for
-    sudo -A --preserve-env=DOTCP_DOTFILES /path/to/dotcp ...
-(-A b/c we like \$SUDO_ASKPASS).
-    $prog -r
+Options
+    -h : help
+    -s : simulate
+    -k : keep simulate files
+    -e : treat only files which already exist
+    -c : run reverse copy commands (target -> dotfiles repo)
+    -S : source base dir [default: \$DOTCP_DOTFILES or \$HOME/dotfiles]
+    -v : verbose, shows diffs
+    -V : more verbose
+    -p : use pager
+    -x : exclude regex
+    -i : include regex, use either -i or -x
+    -r : run as root (using sudo)
+    -d : config files will be copied to <deploy_dir>/
+        [default: \$HOME]
+    --sim-deploy-dir : temp dir for -s, default is auto-generated
 EOF
 }
 
@@ -187,7 +142,7 @@ while [ $# -gt 0 ]; do
             run_as_root=true
             ;;
         -h)
-            usage | less
+            usage
             exit 0
             ;;
         --)

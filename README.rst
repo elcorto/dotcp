@@ -13,6 +13,7 @@ Features:
 * simulate what would be updated (``-s``)
 * show diffs between dotfiles repo and target (``-spv``)
 * include/exclude files (``-i``/``-x``).
+* run as root (``-r``)
 
 See ``dotcp -h`` for a full list of options and examples.
 
@@ -56,7 +57,7 @@ Usage
     -p : use pager
     -x : exclude regex
     -i : include regex, use either -i or -x
-    -r : run as root (sudo -AE ...)
+    -r : run as root (using sudo)
     -d : config files will be copied to <deploy_dir>/
         [default: $HOME]
     --sim-deploy-dir : temp dir for -s, default is auto-generated
@@ -81,8 +82,9 @@ Usage
     and actually execute them (remove simulate):
         dotcp -c
 
-    Run as root. This is a shorthand for "sudo -A -E /path/to/dotcp ..." (-E to
-    drag $DOTCP_DOTFILES along, -A b/c we like $SUDO_ASKPASS).
+    Run as root. This is a shorthand for
+        sudo -A --preserve-env=DOTCP_DOTFILES /path/to/dotcp ...
+    (-A b/c we like $SUDO_ASKPASS).
         dotcp -r
 
 Dotfiles repo layout

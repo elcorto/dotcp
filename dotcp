@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+set -eu
 
 prog=$(basename $0)
 simulate=false
@@ -15,7 +15,7 @@ only_existing=false
 bak_suffix='.bak-dotcp-'
 exclude=''
 include=''
-root=false
+run_as_root=false
 
 
 usage(){
@@ -55,7 +55,7 @@ options
 -p : use pager
 -x : exclude regex
 -i : include regex, use either -i or -x
--r : run as root (sudo -AE ...)
+-r : run as root (using sudo)
 -d : config files will be copied to <deploy_dir>/
     [default: \$HOME]
 --sim-deploy-dir : temp dir for -s, default is auto-generated
@@ -80,8 +80,9 @@ reverse of installing them):
 and actually execute them (remove simulate):
     $prog -c
 
-Run as root. This is a shorthand for "sudo -A -E /path/to/dotcp ..." (-E to
-drag \$DOTCP_DOTFILES along, -A b/c we like \$SUDO_ASKPASS).
+Run as root. This is a shorthand for
+    sudo -A --preserve-env=DOTCP_DOTFILES /path/to/dotcp ...
+(-A b/c we like \$SUDO_ASKPASS).
     $prog -r
 EOF
 }
@@ -101,21 +102,11 @@ same_hash(){
 }
 
 
-run(){
-    if $root; then
-        sudo -AE $(readlink -f $0) $@
-    else
-        $@
-    fi
-}
-
-
 sim_cleanup(){
     if ! $keep_sim_deploy_dir; then
         [ -d $sim_deploy_dir ] && rm -rf $sim_deploy_dir
     fi
 }
-
 
 filetype(){
     stat -c %F $@
@@ -193,7 +184,7 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         -r)
-            root=true
+            run_as_root=true
             ;;
         -h)
             usage | less
@@ -209,6 +200,18 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
+
+
+if $run_as_root; then
+    # run as root:
+    #   dotcp -r -s -i foo -pv
+    # gets transformed by getopt to
+    #   cmdline="-r -s -i 'foo' -p -v --"
+    # We remove "-r" and the final "--" and call us again with sudo. Cool, eh?
+    sudo -A --preserve-env=DOTCP_DOTFILES $(readlink -f $0) \
+        $(echo "$cmdline" | sed -re 's/(.*) --/\1/; s/-r//')
+    exit 0
+fi
 
 
 main(){
@@ -338,8 +341,9 @@ main(){
     done
 }
 
+
 if $usepager; then
-    run main | vim -c 'set nomod syn=diff' -c 'map q :q<CR>' -
+    main | vim -c 'set nomod syn=diff' -c 'map q :q<CR>' -
 else
-    run main
+    main
 fi

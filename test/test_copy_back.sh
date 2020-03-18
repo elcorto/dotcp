@@ -14,14 +14,16 @@ prefix=dotcp_$(basename $0)
 tmp_base=/tmp
 
 deploy_dir=$(mktemp --tmpdir=$tmp_base -d ${prefix}_deploy_dir_XXXXXXXX)
+src=$src_dir/user/a
+tgt=$deploy_dir/a
 
 # init deploy_dir with local state
-orig_content_a=$(cat $src_dir/user/a)
-echo 'wqhih8hdwu8qwd78nd' > $src_dir/user/a
+orig_content_a=$(cat $src)
+echo 'wqhih8hdwu8qwd78nd' > $src
 ../dotcp -S $src_dir -d $deploy_dir
 
 # we copy this back
-echo "$orig_content_a" > $deploy_dir/a
+echo "$orig_content_a" > $tgt
 
 
 echo "src_dir: $src_dir"
@@ -35,5 +37,13 @@ tree -al $deploy_dir
 # copy back
 ../dotcp -S $src_dir -d $deploy_dir -c
 
-assert_file_equal $deploy_dir/a $src_dir/user/a
-[ $(cat $src_dir/user/a) = "$orig_content_a" ]
+assert_file_equal $tgt $src
+[ $(cat $src) = "$orig_content_a" ]
+
+# test repo delete when tgt is removed
+rm $tgt
+../dotcp -S $src_dir -d $deploy_dir -c
+[ -f $src ] && err "$src still exists"
+
+# restore
+echo "$orig_content_a" > $src

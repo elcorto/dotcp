@@ -263,8 +263,12 @@ main(){
 
         # Commands for the reverse: tgt (file system) --> src (here)
         if $reverse_cp_commands; then
-            copy_cmd="cp $cp_opts $real_tgt $src"
-            $is_root && copy_cmd="sudo $copy_cmd; sudo chown $user:$user $src"
+            if exists $real_tgt; then
+                copy_cmd="cp $cp_opts $real_tgt $src"
+                $is_root && copy_cmd="sudo $copy_cmd; sudo chown $user:$user $src"
+            else
+                copy_cmd="rm -r $src"
+            fi
             $simulate && echo "$copy_cmd" || eval "$copy_cmd -v"
         # Copy to target
         else

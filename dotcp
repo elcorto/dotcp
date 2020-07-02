@@ -93,6 +93,11 @@ exists(){
 }
 
 
+strip_quotes(){
+    echo $@ | sed -re "s/'(.+)'/\1/"
+}
+
+
 cmdline=$(getopt -o hcsS:kpevVd:x:i:r -lsim-deploy-dir: -- "$@")
 eval set -- "$cmdline"
 while [ $# -gt 0 ]; do
@@ -114,7 +119,7 @@ while [ $# -gt 0 ]; do
             usepager=true
             ;;
         -S)
-            src_dr_base=$2
+            src_dr_base="$(strip_quotes $2)"
             shift
             ;;
         -c)
@@ -127,15 +132,15 @@ while [ $# -gt 0 ]; do
             verbose=2
             ;;
         -d)
-            deploy_dir=$2
+            deploy_dir="$(strip_quotes $2)"
             shift
             ;;
         -i)
-            include=$2
+            include="$(strip_quotes $2)"
             shift
             ;;
         -x)
-            exclude=$2
+            exclude="$(strip_quotes $2)"
             shift
             ;;
         -r)
@@ -163,6 +168,23 @@ if $run_as_root; then
     # gets transformed by getopt to
     #   cmdline="-r -s -i 'foo' -p -v --"
     # We remove "-r" and the final "--" and call us again with sudo. Cool, eh?
+    #
+    # By default, all string args are single-quoted in that case by getopt.
+    # There is an option to turn that off, but that causes other problems, so we
+    # keep it. Nevertheless, the quoting causes some problems down the line b/c
+    # e.g. args to -i, -x, -d, -S are not recognized. For instance -S sets
+    # $src_dr_base. Say we use (as user)
+    #   dotcp -S /path/to/foo
+    # which will be used as
+    #   $src_dr_base/user
+    #   /path/to/foo/user
+    # whereas as root we'd have
+    #   dotcp -r -S /path/to/foo
+    # with
+    #   $src_dr_base/user
+    #   '/path/to/foo'/user
+    # which raises an error. That's why we apply strip_quotes to all string
+    # args.
     sudo -A --preserve-env=DOTCP_DOTFILES $(readlink -f $0) \
         $(echo "$cmdline" | sed -re 's/(.*) --/\1/; s/-r//')
     exit 0

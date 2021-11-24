@@ -58,7 +58,7 @@ Options
         -c : run reverse copy commands (target -> dotfiles repo)
         -S : source base dir [default: $DOTCP_DOTFILES or $HOME/dotfiles]
         -v : verbose, shows diffs
-        -V : more verbose
+        -V : more verbose, print all considered file names, also more cp -v
         -p : use pager
         -x : exclude regex
         -i : include regex, use either -i or -x

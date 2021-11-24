@@ -31,7 +31,7 @@ Options
     -c : run reverse copy commands (target -> dotfiles repo)
     -S : source base dir [default: \$DOTCP_DOTFILES or \$HOME/dotfiles]
     -v : verbose, shows diffs
-    -V : more verbose
+    -V : more verbose, print all considered file names, also more cp -v
     -p : use pager
     -x : exclude regex
     -i : include regex, use either -i or -x
@@ -245,6 +245,8 @@ main(){
             if echo "$src" | grep -qE "$exclude"; then
                 [ $verbose -ge 2 ] && echo "exclude: $src"
                 continue
+            else
+                [ $verbose -ge 2 ] && echo "include: $src"
             fi
         elif [ -n "$include" ]; then
             if echo "$src" | grep -qE "$include"; then
@@ -253,6 +255,8 @@ main(){
                 [ $verbose -ge 2 ] && echo "exclude: $src"
                 continue
             fi
+        else
+            [ $verbose -ge 2 ] && echo "include: $src"
         fi
 
         install_path=$(echo $src | sed "s|$src_dr/||")

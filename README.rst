@@ -15,6 +15,16 @@ Features:
 * include/exclude files (``-i``/``-x``).
 * run as root (``-r``)
 
+Non-features:
+
+* multiple machines: This tool just copies files from/to a repo and has no
+  knowledge of which machine it is on. So far we use machine-specific branches
+  and rebase onto master to distribute common changes, which has obvious
+  downsides.
+
+Of course github is full of projects like this. Have fun in the rabbit hole:
+https://dotfiles.github.io
+
 Usage
 =====
 

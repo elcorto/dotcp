@@ -217,4 +217,4 @@ Notes
 =====
 
 ``tools/backup.sh`` is `a copy of backup.sh from shelltools
-<https://github.com/elcorto/shelltools/blob/master/bin/backup.sh>`_ .
+<https://github.com/elcorto/shelltools/blob/master/bin/backup>`_ .

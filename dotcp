@@ -305,7 +305,7 @@ main(){
                 # to prevent dropping out here if we use
                 #   set -e
                 # globally.
-                echo "$(diff -Naur $tgt $src)"
+                echo "$(diff -Naur $src $tgt)"
             fi
             # backup.sh -d : backup and delete, ensure clear dir when
             # copying new file

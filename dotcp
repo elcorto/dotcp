@@ -98,6 +98,10 @@ strip_quotes(){
 }
 
 
+get_mtime(){
+    stat -c %Y $1
+}
+
 cmdline=$(getopt -o hcsS:kpevVd:x:i:r -lsim-deploy-dir: -- "$@")
 eval set -- "$cmdline"
 while [ $# -gt 0 ]; do
@@ -305,7 +309,13 @@ main(){
                 # to prevent dropping out here if we use
                 #   set -e
                 # globally.
-                echo "$(diff -Naur $src $tgt)"
+                if exists $real_tgt; then
+                    if [ $(get_mtime $src) -le $(get_mtime $real_tgt) ]; then
+                        echo "$(diff -Naur $src $real_tgt)"
+                    else
+                        echo "$(diff -Naur $real_tgt $src)"
+                    fi
+                fi
             fi
             # backup.sh -d : backup and delete, ensure clear dir when
             # copying new file

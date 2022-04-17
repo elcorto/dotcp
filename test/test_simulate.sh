@@ -25,7 +25,7 @@ tree -al $src_dir
 echo "deploy_dir: $deploy_dir"
 tree -al $deploy_dir
 
-../dotcp -s -S $src_dir --sim-deploy-dir=$sim_deploy_dir -d $deploy_dir -k
+../dotcp -s -S $src_dir --sim-deploy-dir=$sim_deploy_dir -d $deploy_dir -k -v
 
 echo "sim_deploy_dir: $sim_deploy_dir"
 tree -al $sim_deploy_dir

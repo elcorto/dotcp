@@ -45,28 +45,6 @@ EOF
 here=$(dirname $(readlink -f $0))
 . $here/tools/common.sh
 
-_hsh(){
-    sha1sum $1 | cut -f1 -d ' '
-}
-
-
-same_hash(){
-    [ $(_hsh $1) = $(_hsh $2) ]
-# not faster
-##    diff -q $1 $2
-}
-
-
-sim_cleanup(){
-    if ! $keep_sim_deploy_dir; then
-        [ -d $sim_deploy_dir ] && rm -rf $sim_deploy_dir
-    fi
-}
-
-filetype(){
-    stat -c %F $@
-}
-
 
 ft_file=$(filetype $here/tools/filetypes/dir/file)
 ft_link=$(filetype $here/tools/filetypes/dir/link)
@@ -88,18 +66,11 @@ islink(){
 }
 
 
-exists(){
-    [ -e $1 ]
-}
 
-
-strip_quotes(){
-    echo $@ | sed -re "s/'(.+)'/\1/"
-}
-
-
-get_mtime(){
-    stat -c %Y $1
+sim_cleanup(){
+    if ! $keep_sim_deploy_dir; then
+        [ -d $sim_deploy_dir ] && rm -rf $sim_deploy_dir
+    fi
 }
 
 cmdline=$(getopt -o hcsS:kpevVd:x:i:r -lsim-deploy-dir: -- "$@")

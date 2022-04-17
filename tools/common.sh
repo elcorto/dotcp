@@ -66,3 +66,35 @@ err(){
     echo "$(basename $0): error: $@"
     exit 1
 }
+
+
+_hsh(){
+    sha1sum $1 | cut -f1 -d ' '
+}
+
+
+same_hash(){
+    [ $(_hsh $1) = $(_hsh $2) ]
+# not faster
+##    diff -q $1 $2
+}
+
+
+filetype(){
+    stat -c %F $@
+}
+
+
+exists(){
+    [ -e $1 ]
+}
+
+
+strip_quotes(){
+    echo $@ | sed -re "s/'(.+)'/\1/"
+}
+
+
+get_mtime(){
+    stat -c %Y $1
+}

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Merge all base branches into master
+
+set -eu
+
+master_branch=master
+
+git checkout $master_branch
+
+# this should be a octopus merge but nothing happens
+##git merge $(git branch --format='%(refname:short)' | grep 'base-')
+
+for base_branch in $(git branch --format='%(refname:short)' | grep 'base-'); do
+    git checkout $base_branch
+    git merge $master_branch
+done

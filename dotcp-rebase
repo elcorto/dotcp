@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# Rebase each machine branch onto it's base branch.
+
+set -eu
+
+master_branch=master
+current_branch=$(git branch --show-current)
+echo "current_branch: $current_branch"
+
+for branch in $(git branch --format='%(refname:short)'); do
+    base_branch="base-$branch"
+
+    # Skip all branches which are not a base branch. Also only continue when
+    # base branch exists.
+    [ "$branch" = "$master_branch" ] && continue
+    [ "$branch" = "$base_branch" ] && continue
+    (git branch --format='%(refname:short)' | grep -q $base_branch) || continue
+
+    echo "branch=$branch"
+    echo "  base_branch=$base_branch"
+    echo "    rebase $branch onto $base_branch ..."
+    git rebase --onto=$base_branch $(git merge-base $base_branch $branch) $branch
+done
+
+git checkout $current_branch

@@ -23,6 +23,39 @@ Non-features:
   and rebase onto master to distribute common changes, which has obvious
   downsides but works ok if only one person maintains the dotfiles repo.
 
+Multi-machine workflow
+
+Distribute local changes in machine "foo"'s base branch
+
+```sh
+$ git checkout base-foo
+< ... hack hack hack ...>
+$ git commit ...
+
+# Merge base-foo into master
+$ dotcp-merge-bases
+
+# Rebase each machine branch onto it's base branch
+$ dotcp-rebase
+
+$ dotcp-push
+```
+
+Fetch and update from upstream
+
+```sh
+$ git fetch
+
+# bring ff-able base branches up to date
+$ dotcp-merge-bases --ff-only
+
+# Manually update a locally outdated base branch if needed
+$ git branch -f base-foo origin/base-foo
+
+# Update all machine branches to upstream state
+$ dotcp-reset-to-upstream
+```
+
 Of course github is full of projects like this. Have fun in the rabbit
 hole: <https://dotfiles.github.io>
 

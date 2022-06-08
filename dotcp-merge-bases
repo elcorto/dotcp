@@ -11,40 +11,19 @@ set -eu
 
 master_branch=master
 
-# * bc06cb1  (HEAD -> base-xonec) <Steve S..> ipython: add psweep import at startup
-# |
-# * 434fafe  (origin/base-xonec) <Steve S..> browser.desktop: remove quotes in Exec field
-# |
-# * 697a920  <Steve S..> changelog-01: Tiny comment update
-# |
-# * 169ddc2  <Steve S..> Fix Okular URL handling
-# |
-# * e994b23  <Steve S..> i3: make backlight.sh executable
-# |
-# | * af44b4e  (origin/deskbot, deskbot) <Steve S..> deskbot: force amdgpu driver
-# | |
-# | * b747101  <Steve S..> add soft/bin/gameface
-# |/
-# |
-# | * f455ac1  (origin/lebdob, lebdob) <Steve S..> lebdob: swich to 1080p-only DPI (96) default
-# |/
-# |
-# | * 6cf2e29  (origin/xonec, xonec) <Steve S..> sound: disable sof-audio-pci driver in grub config
-# | |
-# | * a2ff38f  <Steve S..> arandr screenlayout: add work_* configs
-# | |
-# | * 515e443  <Steve S..> Remove freenas mount stuff for xonec
-# |/
-# |
-# * 0e87428  (origin/master, origin/base-lebdob, origin/base-deskbot, origin/HEAD, master, base-lebdob, base-deskbot) <Steve S..> hzdr sshfs: add lazy umount
+# Octopus merge: merge multiple branches into one.
 #
-# Octopus merge: merge multiple branches into one. This will only move master
-# to the most recent base-foo (base-xonec above). All other base-bar
-# (base-lebdob, base-deskbot) which are now older than master are not moved and
-# must be moved by separate
+#   $ git co master
+#   $ git merge base-foo base-bar base-baz
+#
+# This will only move master to the most recent base-foo. All other base-*
+# which are now older than master are not moved and must be moved by separate
 #
 #   $ git co base-bar
 #   $ git merge master
+#   $ git co base-baz
+#   $ git merge master
+#
 git checkout $master_branch
 git merge $(git branch --format='%(refname:short)' | grep 'base-')
 

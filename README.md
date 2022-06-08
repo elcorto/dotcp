@@ -4,7 +4,7 @@
 single shell script used to keep a dotfiles repo and a target machine in
 sync.
 
-Features:
+## Features
 
 * copy files from a dotfiles repo to a target location (e.g. `$HOME`)
 * check for file updates based on file hashes
@@ -15,49 +15,10 @@ Features:
 * show diffs between dotfiles repo and target (`-spv`)
 * include/exclude files (`-i`/`-x`).
 * run as root (`-r`)
+* git-based multi-machine support (experimental)
 
-Non-features:
+Overview of other dotfiles managers: <https://dotfiles.github.io>
 
-* multiple machines: This tool just copies files from/to a repo and has no
-  knowledge of which machine it is on. So far we use machine-specific branches
-  and rebase onto master to distribute common changes, which has obvious
-  downsides but works ok if only one person maintains the dotfiles repo.
-
-Multi-machine workflow
-
-Distribute local changes in machine "foo"'s base branch
-
-```sh
-$ git checkout base-foo
-< ... hack hack hack ...>
-$ git commit ...
-
-# Merge base-foo into master
-$ dotcp-merge-bases
-
-# Rebase each machine branch onto it's base branch
-$ dotcp-rebase
-
-$ dotcp-push
-```
-
-Fetch and update from upstream
-
-```sh
-$ git fetch
-
-# bring ff-able base branches up to date
-$ dotcp-merge-bases --ff-only
-
-# Manually update a locally outdated base branch if needed
-$ git branch -f base-foo origin/base-foo
-
-# Update all machine branches to upstream state
-$ dotcp-reset-to-upstream
-```
-
-Of course github is full of projects like this. Have fun in the rabbit
-hole: <https://dotfiles.github.io>
 
 # Usage
 
@@ -107,7 +68,7 @@ Options
     --sim-deploy-dir : temp dir for -s, default is auto-generated
 ```
 
-# Examples
+## Examples
 
 Simulate (`-s`) what would be copied:
 
@@ -150,7 +111,7 @@ like `SUDO_ASKPASS`):
 $ dotcp -r
 ```
 
-# Dotfiles repo layout
+## Dotfiles repo layout
 
 Have the files to copy in a dir `$DOTCP_DOTFILES`, typically this will
 be a git repo with your dotfiles (or any files you need to keep in sync,
@@ -232,6 +193,107 @@ Here is an example layout of a dotfiles repo
     │       └── README.rst
     └── .zshrc
 ```
+
+
+## Multi-machine workflow
+
+This tool just copies files from/to a repo and has no knowledge of which
+machine it is on. We use machine-specific branches and rebase which has obvious
+downsides but works ok if only one person maintains the dotfiles repo. We have
+some scripts which help to automate things. Here are some examples where we
+manage 3 machines `foo`, `bar` and `baz`. We assume a branch layout like this:
+
+```
+* f5685c8  (origin/foo, foo)
+|
+| * d586006  (origin/bar, bar)
+| |
+| * ed4554c
+| |
+| * 5412e49
+|/
+|
+| * beeec33  (origin/baz, baz)
+| |
+| * f20fc31
+|/
+|
+* 2f45020  (HEAD -> base-bar, origin/master, origin/base-bar, origin/base-foo, origin/base-baz, origin/HEAD, master, base-foo, base-baz)
+```
+
+We have *two* types of machine-specific branches: machine base branches
+`base-foo`, `base-bar` and `base-baz` which should be in sync with `master`. We
+use those to distribute common changes by merging them into `master`.
+Machine-specific changes are in machine branches `foo`, `bar` and `baz` etc.
+which should be (re-)based on top of their base branch `base-{foo,bar,baz}` and
+therefore also on top of `master`.
+
+The idea is to use merging for `master` and `base-foo`, `base-bar`, `base-baz`
+so that we can use a standard git workflow. We only rebase and then need to
+force-push the machine branches `foo`, `bar` and `baz`.
+
+### Distribute local changes in machine foo's base branch
+
+```sh
+$ git checkout base-foo
+< ... hack hack hack ...>
+$ git commit ...
+```
+
+Now we have a branch situation similar to this:
+
+```
+* c55d213  (HEAD -> base-foo)
+|
+| * f5685c8  (origin/foo, foo)
+|/
+|
+| * d586006  (origin/bar, bar)
+| |
+| * ed4554c
+| |
+| * 5412e49
+|/
+|
+| * beeec33  (origin/baz, baz)
+| |
+| * f20fc31
+|/
+|
+* 2f45020  (origin/master, origin/base-bar, origin/base-foo, origin/base-baz, origin/HEAD, master, base-bar, base-baz)
+```
+
+`base-foo` is now ahead of `master`, `base-bar` and `base-baz`. We need to
+merge them to bring `master` and the base branches up to date.
+
+```sh
+# Update master and all other base-bar base-baz to new base-foo
+$ dotcp-merge-bases
+
+# Rebase each machine branch (foo, bar, baz) onto it's base branch
+# base-{foo,bar,baz}
+$ dotcp-rebase
+
+# Push master and base-foo, base-bar, base-baz; force-push rebased foo, bar,
+# baz
+$ dotcp-push
+```
+
+### Fetch and update from upstream
+
+```sh
+$ git fetch
+
+# bring ff-able base branches up to date
+$ dotcp-merge-bases --ff-only
+
+# Manually update a locally outdated base branch if needed
+$ git branch -f base-foo origin/base-foo
+
+# Update all machine branches to upstream state
+$ dotcp-reset-to-upstream
+```
+
 
 # Tests
 

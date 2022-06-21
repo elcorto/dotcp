@@ -43,12 +43,13 @@ EOF
 }
 
 here=$(dirname $(readlink -f $0))
-. $here/tools/common.sh
+tools_dir=$here/../tools
+. $tools_dir/common.sh
 
 
-ft_file=$(filetype $here/tools/filetypes/dir/file)
-ft_link=$(filetype $here/tools/filetypes/dir/link)
-ft_dir=$(filetype $here/tools/filetypes/dir)
+ft_file=$(filetype $tools_dir/filetypes/dir/file)
+ft_link=$(filetype $tools_dir/filetypes/dir/link)
+ft_dir=$(filetype $tools_dir/filetypes/dir)
 
 
 isfile(){
@@ -292,7 +293,7 @@ main(){
             # copying new file
             # backup.sh -P : copy links as links
             if ! $simulate && exists "$tgt"; then
-                $here/tools/backup.sh -dP -p $bak_suffix $tgt
+                $tools_dir/backup.sh -dP -p $bak_suffix $tgt
             fi
             mkdir -p $vopt $(dirname $tgt)
             cp $cp_opts $vopt $src $tgt

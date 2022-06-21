@@ -24,10 +24,13 @@ master_branch=master
 #   $ git co base-baz
 #   $ git merge master
 #
-git checkout $master_branch
-git merge $(git branch --format='%(refname:short)' | grep 'base-')
+base_branches=$(git branch --format='%(refname:short)' | grep 'base-')
+echo $base_branches
 
-for base_branch in $(git branch --format='%(refname:short)' | grep 'base-'); do
+git checkout $master_branch
+git merge $base_branches
+
+for base_branch in $base_branches; do
     git checkout $base_branch
     git merge $@ $master_branch
 done

@@ -13,8 +13,8 @@ for branch in $all_branches; do
     base_branch="base-$branch"
     upstream_branch=origin/$branch
 
-    # Skip all branches which are not a base branch. Also only continue when
-    # base branch exists.
+    # Skip all branches which are a base branch or the master branch. Only
+    # continue when base branch exists.
     [ "$branch" = "$master_branch" ] && continue
     [ "$branch" = "$base_branch" ] && continue
     (echo "$all_branches" | grep -q $base_branch) || continue

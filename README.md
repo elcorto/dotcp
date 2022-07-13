@@ -4,6 +4,8 @@
 single shell script used to keep a dotfiles repo and a target machine in
 sync.
 
+There are some helper scripts for managing machine-specific branches.
+
 ## Features
 
 * copy files from a dotfiles repo to a target location (e.g. `$HOME`)
@@ -197,7 +199,7 @@ Here is an example layout of a dotfiles repo
 
 ## Multi-machine workflow
 
-This tool just copies files from/to a repo and has no knowledge of which
+`dotcp` just copies files from/to a repo and has no knowledge of which
 machine it is on. We use machine-specific branches and rebase which has obvious
 downsides but works ok if only one person maintains the dotfiles repo. We have
 some scripts which help to automate things. Here are some examples where we
@@ -221,12 +223,15 @@ manage 3 machines `foo`, `bar` and `baz`. We assume a branch layout like this:
 * 2f45020  (HEAD -> base-bar, origin/master, origin/base-bar, origin/base-foo, origin/base-baz, origin/HEAD, master, base-foo, base-baz)
 ```
 
-We have *two* types of machine-specific branches: machine base branches
-`base-foo`, `base-bar` and `base-baz` which should be in sync with `master`. We
-use those to distribute common changes by merging them into `master`.
-Machine-specific changes are in machine branches `foo`, `bar` and `baz` etc.
-which should be (re-)based on top of their base branch `base-{foo,bar,baz}` and
-therefore also on top of `master`.
+We have *two* types of machine-specific branches:
+
+* Base branches ("bb") `base-foo`, `base-bar` and `base-baz` which should be in
+  sync with `master`. We use those to distribute common changes by merging them
+  into `master`.
+
+* Machine-specific changes are in machine branches ("mb") `foo`, `bar` and
+  `baz` etc. which should be (re-)based on top of their base branch
+  `base-{foo,bar,baz}` and therefore also on top of `master`.
 
 The idea is to use merging for `master` and `base-foo`, `base-bar`, `base-baz`
 so that we can use a standard git workflow. We only rebase and then need to
@@ -236,7 +241,9 @@ force-push the machine branches `foo`, `bar` and `baz`.
 
 ```sh
 $ git checkout base-foo
-< ... hack hack hack ...>
+
+# < ... hack hack hack ...>
+
 $ git commit ...
 ```
 
@@ -264,15 +271,22 @@ Now we have a branch situation similar to this:
 ```
 
 `base-foo` is now ahead of `master`, `base-bar` and `base-baz`. We need to
-merge them to bring `master` and the base branches up to date.
+merge them to bring `master` and the other base branches up to date. Then we
+may want to rebase machine branches onto their respective base branch. Finally
+we push the changes.
 
 ```sh
 # Update master and all other base-bar base-baz to new base-foo
-$ dotcp-merge-bases
+$ dotcp-merge-bbs
 
 # Rebase each machine branch (foo, bar, baz) onto it's base branch
-# base-{foo,bar,baz}
-$ dotcp-rebase
+# base-{foo,bar,baz}. This is optional if you mostly deploy from branch base-foo
+# rather than branch foo if (i) the changes in foo have been deployed once and
+# don't change, as such the commits base-foo...foo are the same and (ii)
+# deploying base-foo doesn't revert changes in foo. In this case you can work w/
+# base-foo and only rebase foo onto base-foo (and deploy from it) if changes are
+# added to foo.
+$ dotcp-rebase-mb-to-bb
 
 # Push master and base-foo, base-bar, base-baz; force-push rebased foo, bar,
 # baz
@@ -284,16 +298,23 @@ $ dotcp-push
 ```sh
 $ git fetch
 
-# bring ff-able base branches up to date
-$ dotcp-merge-bases --ff-only
+# Merge all base branches and master
+$ dotcp-merge-bbs
+
+# Update all machine branches to upstream state. Again this is optional in case
+# you work mainly with base-{foo,bar,baz}.
+$ dotcp-force-reset-mb-to-upstream
+```
+
+Sometimes you may need to do a bit more git trickery, such as
+
+```sh
+# Bring only base branches up to date which can be fast-forward merged.
+$ dotcp-merge-bbs --ff-only
 
 # Manually update a locally outdated base branch if needed
 $ git branch -f base-foo origin/base-foo
-
-# Update all machine branches to upstream state
-$ dotcp-reset-to-upstream
 ```
-
 
 # Tests
 

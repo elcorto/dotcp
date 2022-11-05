@@ -282,25 +282,30 @@ main(){
         else
             echo "#new $(filetype $src): $real_tgt [$src]"
             if [ $verbose -ge 1 ] && isfile "$src"; then
-                # Work around diff exit code. Need to use
-                #   echo $(diff...)
-                # to prevent dropping out here if we use
-                #   set -e
-                # globally.
                 if exists $real_tgt; then
-                    if [ $mtime_mode = "a" ]; then
-                        if [ $(get_mtime $src) -le $(get_mtime $real_tgt) ]; then
-                            echo "$(diff -Naur $src $real_tgt)"
-                        else
-                            echo "$(diff -Naur $real_tgt $src)"
-                        fi
-                    elif [ $mtime_mode = "r" ]; then
-                        echo "$(diff -Naur $real_tgt $src)"
+                    if [ $mtime_mode = "r" ]; then
+                        old=$real_tgt
+                        new=$src
                     elif [ $mtime_mode = "t" ]; then
-                        echo "$(diff -Naur $src $real_tgt)"
+                        old=$src
+                        new=$real_tgt
+                    elif [ $mtime_mode = "a" ]; then
+                        if [ $(get_mtime $src) -le $(get_mtime $real_tgt) ]; then
+                            old=$src
+                            new=$real_tgt
+                        else
+                            old=$real_tgt
+                            new=$src
+                        fi
                     else
                         err "illegal mtime_mode=$mtime_mode"
                     fi
+                    # Work around diff exit code. Need to use
+                    #   echo $(diff...)
+                    # to prevent dropping out here if we use
+                    #   set -e
+                    # globally.
+                    echo "$(diff -Naur $old $new)"
                 fi
             fi
             # backup.sh -d : backup and delete, ensure clear dir when

@@ -280,7 +280,7 @@ main(){
             $simulate && echo "$copy_cmd" || eval "$copy_cmd -v"
         # Copy to target
         else
-            echo "#new $(filetype $src): $real_tgt [$src]"
+            echo "#item: $(filetype $src): $real_tgt [$src]"
             if [ $verbose -ge 1 ] && isfile "$src"; then
                 if exists $real_tgt; then
                     if [ $mtime_mode = "r" ]; then

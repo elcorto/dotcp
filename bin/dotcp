@@ -16,7 +16,7 @@ bak_suffix='.bak-dotcp-'
 exclude=''
 include=''
 run_as_root=false
-
+mtime_mode=r
 
 usage(){
     cat <<EOF
@@ -36,6 +36,8 @@ Options
     -x : exclude regex
     -i : include regex, use either -i or -x
     -r : run as root (using sudo)
+    -m : how to treat modification times in diff: (r)epo is new, (t)arget is
+         new, (a)uto = use file mtime
     -d : config files will be copied to <deploy_dir>/
         [default: \$HOME]
     --sim-deploy-dir : temp dir for -s, default is auto-generated
@@ -74,7 +76,7 @@ sim_cleanup(){
     fi
 }
 
-cmdline=$(getopt -o hcsS:kpevVd:x:i:r -lsim-deploy-dir: -- "$@")
+cmdline=$(getopt -o hcsS:kpevVd:x:i:rm: -lsim-deploy-dir: -- "$@")
 eval set -- "$cmdline"
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -121,6 +123,10 @@ while [ $# -gt 0 ]; do
             ;;
         -r)
             run_as_root=true
+            ;;
+        -m)
+            mtime_mode=$2
+            shift
             ;;
         -h)
             usage
@@ -282,10 +288,18 @@ main(){
                 #   set -e
                 # globally.
                 if exists $real_tgt; then
-                    if [ $(get_mtime $src) -le $(get_mtime $real_tgt) ]; then
+                    if [ $mtime_mode = "a" ]; then
+                        if [ $(get_mtime $src) -le $(get_mtime $real_tgt) ]; then
+                            echo "$(diff -Naur $src $real_tgt)"
+                        else
+                            echo "$(diff -Naur $real_tgt $src)"
+                        fi
+                    elif [ $mtime_mode = "r" ]; then
+                        echo "$(diff -Naur $real_tgt $src)"
+                    elif [ $mtime_mode = "t" ]; then
                         echo "$(diff -Naur $src $real_tgt)"
                     else
-                        echo "$(diff -Naur $real_tgt $src)"
+                        err "illegal mtime_mode=$mtime_mode"
                     fi
                 fi
             fi

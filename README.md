@@ -65,6 +65,8 @@ Options
     -x : exclude regex
     -i : include regex, use either -i or -x
     -r : run as root (using sudo)
+    -m : how to treat modification times in diff: (r)epo is new, (t)arget is
+         new, (a)uto = use file mtime
     -d : config files will be copied to <deploy_dir>/
         [default: $HOME]
     --sim-deploy-dir : temp dir for -s, default is auto-generated
@@ -89,6 +91,19 @@ The same, but view the diff in a pager (vim):
 ```sh
 $ dotcp -spv
 ```
+
+The default diff mode (modification time option `-m`) is
+
+```sh
+$ dotcp -spv -m r
+```
+
+`-m r` treats the dotfiles repo state as new. This mode best shows the effect
+of copying files, i.e. how disk files will be changed when running `dotcp`. Use
+`-m t` to treat the disk target files as new, for instance when you made new
+target file changes. Use `-m a` to determine old/new based on file
+modification times. Note that `-m` only affects diff display when using `-v`,
+not what `dotcp` does, which is just copying files.
 
 If you have changed target files and need to add the changes to the
 dotfiles repo. Show commands to copy changed target files the dotfiles

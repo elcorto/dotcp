@@ -65,8 +65,8 @@ Options
     -x : exclude regex
     -i : include regex, use either -i or -x
     -r : run as root (using sudo)
-    -m : how to treat modification times in diff: (r)epo is new, (t)arget is
-         new, (a)uto = use file mtime
+    -m : how to treat modification times in diff: (r)epo is new (default),
+         (t)arget is new, (a)uto = use file mtime
     -d : config files will be copied to <deploy_dir>/
         [default: $HOME]
     --sim-deploy-dir : temp dir for -s, default is auto-generated

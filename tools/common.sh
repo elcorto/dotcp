@@ -98,3 +98,5 @@ strip_quotes(){
 get_mtime(){
     stat -c %Y $1
 }
+
+dotcp_exe=$(readlink -f $(dirname $0)/../bin/dotcp)

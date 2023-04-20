@@ -107,4 +107,19 @@ tmpdir(){
 }
 
 
+isfile(){
+    [ -f $1 ] && [ "$(filetype $1)" = "$ft_file" ]
+}
+
+
+isdir(){
+    [ -d $1 ] && [ "$(filetype $1)" = "$ft_dir" ]
+}
+
+
+islink(){
+    [ -L $1 ] && [ "$(filetype $1)" = "$ft_link" ]
+}
+
+
 dotcp_exe=$(readlink -f $(dirname $0)/../bin/dotcp)

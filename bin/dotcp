@@ -55,21 +55,6 @@ ft_link=$(filetype $tools_dir/filetypes/dir/link)
 ft_dir=$(filetype $tools_dir/filetypes/dir)
 
 
-isfile(){
-    [ -f $1 ] && [ "$(filetype $1)" = "$ft_file" ]
-}
-
-
-isdir(){
-    [ -d $1 ] && [ "$(filetype $1)" = "$ft_dir" ]
-}
-
-
-islink(){
-    [ -L $1 ] && [ "$(filetype $1)" = "$ft_link" ]
-}
-
-
 cleanup(){
     if ! $keep_sim_deploy_dir; then
         [ -d $sim_deploy_dir ] && rm -rf $sim_deploy_dir

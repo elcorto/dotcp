@@ -62,6 +62,12 @@ assert_link_equal(){
 }
 
 
+assert_string_equal(){
+    [ $# -eq 2 ] || err "assert_string_equal needs 2 args"
+    [ "$1" = "$2" ] || err "Failed string assert: '$1' != '$2'"
+}
+
+
 err(){
     echo "$(basename $0): error: $@"
     exit 1

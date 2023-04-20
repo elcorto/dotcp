@@ -99,4 +99,12 @@ get_mtime(){
     stat -c %Y $1
 }
 
+
+tmpdir(){
+    local prefix=$1
+    [ -d /dev/shm ] && tmp_base=/dev/shm || tmp_base=/tmp
+    mktemp -d ${tmp_base}/${prefix}_XXXXXXXX
+}
+
+
 dotcp_exe=$(readlink -f $(dirname $0)/../bin/dotcp)

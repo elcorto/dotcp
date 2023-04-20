@@ -76,6 +76,7 @@ cleanup(){
     fi
 }
 
+
 cmdline=$(getopt -o hcsS:kpevVd:x:i:rm: -lsim-deploy-dir: -- "$@")
 eval set -- "$cmdline"
 while [ $# -gt 0 ]; do
@@ -202,8 +203,7 @@ main(){
 
     if $simulate; then
         if [ -z "$sim_deploy_dir" ]; then
-            [ -d /dev/shm ] && tmp_base=/dev/shm || tmp_base=/tmp
-            sim_deploy_dir=$(mktemp -d ${tmp_base}/dotcp_simulate_XXXXXXXX)
+            sim_deploy_dir=$(tmpdir dotcp_simulate)
         fi
         echo "simulate: installing into $sim_deploy_dir"
         trap cleanup EXIT STOP INT QUIT KILL ABRT TERM HUP

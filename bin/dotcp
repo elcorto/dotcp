@@ -9,6 +9,7 @@ deploy_dir=$HOME
 usepager=false
 src_dr_base=${DOTCP_DOTFILES:-$HOME/dotfiles}
 sim_deploy_dir=
+templ_render_dir=
 reverse_cp_commands=false
 keep_sim_deploy_dir=false
 only_existing=false
@@ -59,6 +60,12 @@ cleanup(){
     if ! $keep_sim_deploy_dir; then
         [ -d $sim_deploy_dir ] && rm -rf $sim_deploy_dir
     fi
+    [ -d $templ_render_dir ] && rm -rf $templ_render_dir
+}
+
+
+run_j2(){
+    j2 --customize $here/../j2_custom.py $1
 }
 
 
@@ -199,13 +206,38 @@ main(){
     # dotfiles/config/user/.foo/file
     # ^^^^^^^^^^^^^^^-------------------- $DOTCP_DOTFILES
     # ^^^^^^^^^^^^^^^^^^^^--------------- src_dr
+    # ^^^^^^^^^^^^^^^^^^^^--------------- used_src_dr
     #                      ^^^^^^^^^----- install_path
+    #
     #
     # /home/user/.foo/file -------------- real_tgt
     # ^^^^^^^^^^------------------------- deploy_dir
     #            ^^^^^^^^^--------------- install_path
     #
-    for src in $(find $src_dr -type f -o -type l -a ! -name "*.swp"); do
+    # with templates:
+    #
+    # dotfiles/config/user/.foo/file.dotcp_jinja
+    # ^^^^^^^^^^^^^^^------------------------------------------- $DOTCP_DOTFILES
+    # ^^^^^^^^^^^^^^^^^^^^-------------------------------------- src_dr
+    #
+    # /dev/shm/dotcp_templ_render_hsjqwjy717y32u/.foo/file
+    # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -------------- used_src_dr
+    #                                            ^^^^^^^^^----- install_path
+    #
+    for _src in $(find $src_dr -type f -o -type l -a ! -name "*.swp"); do
+
+        # render templates
+        if echo $_src | grep -qE '\.dotcp_jinja$'; then
+            $reverse_cp_commands && err "-c doesn't work for templates, file: $_src"
+            [ -z "$templ_render_dir" ] && templ_render_dir=$(tmpdir dotcp_templ_render)
+            src=$templ_render_dir/$(echo $_src | sed -r -e 's/\.dotcp_jinja$//' -e "s|$src_dr/||")
+            mkdir -p $(dirname $src)
+            run_j2 $_src > $src
+            used_src_dr=$templ_render_dir
+        else
+            src=$_src
+            used_src_dr=$src_dr
+        fi
 
         # apply include / exclude pattern
         if [ -n "$exclude" ]; then
@@ -226,7 +258,7 @@ main(){
             [ $verbose -ge 2 ] && echo "include: $src"
         fi
 
-        install_path=$(echo $src | sed "s|$src_dr/||")
+        install_path=$(echo $src | sed "s|$used_src_dr/||")
         real_tgt=$deploy_dir/$install_path
 
         # whether to treat existing targets only

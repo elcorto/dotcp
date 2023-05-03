@@ -230,6 +230,8 @@ main(){
             src=$templ_render_dir/$(echo $_src | sed -r -e 's/\.dotcp_esh$//' -e "s|$src_dr/||")
             mkdir -p $(dirname $src)
             $ESH $_src > $src
+            # If rendered template is empty, skip ahead.
+            [ -z "$(tr -d ' ' < $src)" ] && continue
             used_src_dr=$templ_render_dir
         else
             src=$_src

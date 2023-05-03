@@ -5,6 +5,7 @@
 test_cleanup(){
     rm -rf $deploy_dir
     rm -rf $template
+    rm -rf /dev/shm/dotcp_templ_render* /tmp/dotcp_templ_render*
     ##echo "skip cleanup"
 }
 
@@ -18,6 +19,7 @@ deploy_dir=$(mktemp --tmpdir=$tmp_base -d ${prefix}_deploy_dir_XXXXXXXX)
 template=$src_dir/user/c.dotcp_esh
 template_tgt=$deploy_dir/c
 
+# Test control flow.
 hn=$(hostname)
 cat > $template << EOF
 <% if [ \$(hostname) = "$hn" ]; then -%>
@@ -34,3 +36,40 @@ tree -al $deploy_dir
 
 $dotcp_exe -S $src_dir -d $deploy_dir
 assert_string_equal "$(cat $template_tgt)" "we are on $hn"
+
+
+# Skip templates that render to only whitespace
+rm $template_tgt
+cat > $template << EOF
+<% if false; then -%>
+This string should not show up.
+<% else %>
+<%# The white space below will be only ^$ when our
+    editor strips trailing whitespace.
+%>
+
+
+<% fi -%>
+EOF
+
+$dotcp_exe -S $src_dir -d $deploy_dir
+! exists $template_tgt || err "$template_tgt exists but should not"
+
+
+cat > $template << EOF
+<% if false; then -%>
+This string should not show up.
+<% else %>
+<%# Generate real whitespace.
+%>
+<%
+echo "        "
+echo "  "
+echo "           "
+%>
+<% fi -%>
+EOF
+
+$dotcp_exe -S $src_dir -d $deploy_dir
+echo ">>>$(cat $template_tgt)<<<"
+! exists $template_tgt || err "$template_tgt exists but should not"

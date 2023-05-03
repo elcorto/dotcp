@@ -232,6 +232,8 @@ main(){
             $ESH $_src > $src
             # If rendered template is empty, skip ahead.
             [ -z "$(tr -d ' ' < $src)" ] && continue
+            # Restore file perms after template render.
+            chmod $(stat -c %a $_src) $src
             used_src_dr=$templ_render_dir
         else
             src=$_src

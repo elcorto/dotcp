@@ -1,10 +1,22 @@
 # About
 
-`dotcp` is a lightweight configuration manager for dotfiles. It is a
-single shell script used to keep a dotfiles repo and a target machine in
-sync.
+`dotcp` is a lightweight configuration manager for dotfiles. It is a single
+shell script used to keep a dotfiles location (usually a git repo) and a target
+machine in sync.
 
-There are some helper scripts for managing machine-specific branches.
+
+## Install
+
+```sh
+$ git clone --recurse-submodules ...
+$ export PATH=/path/to/dotcp/bin:$PATH
+```
+
+The only dependencies are [`esh`][esh] (template support) and
+[`shelltools`](https://github.com/elcorto/shelltools) (only
+[`backup`](https://github.com/elcorto/shelltools/blob/master/bin/backup)). Both
+are written in POSIX shell code and are provided as git submodules
+(`tools/submods`).
 
 ## Features
 
@@ -17,9 +29,7 @@ There are some helper scripts for managing machine-specific branches.
 * show diffs between dotfiles repo and target (`-spv`)
 * include/exclude files (`-i`/`-x`).
 * run as root (`-r`)
-* git-based multi-machine support (experimental)
-
-Overview of other dotfiles managers: <https://dotfiles.github.io>
+* template support (e.g. for multi-machine workflows)
 
 
 # Usage
@@ -45,6 +55,10 @@ A backup of each target is made if necessary (with suffix
 ```sh
 $ find ~/ -maxdepth 5 -wholename "*.bak-dotcp-*" | xargs rm -rv
 ```
+
+Since `dotcp` only considers files in `$DOTCP_DOTFILES/{user,root}`, you can
+place whatever else you like in the repo but outside of these dirs, for
+instance some "admin notes", a README file or additional scripts.
 
 ## Options
 
@@ -117,7 +131,27 @@ and actually execute them (remove simulate):
 
 ```sh
 $ dotcp -c
-$ git diff
+$ git -C $DOTCP_DOTFILES diff
+```
+
+Include or exclude files/dirs/links based on extended regexes (`grep -E`). Use
+`dotcp -s` first and then choose a regex. Often, very short regexes are enough
+to create a unique match.
+
+```sh
+# Only the i3 config file
+$ dotcp -i 'i3/config'
+
+# Exclude anything in .ssh/ and things matching 'vimrc'
+$ dotcp -x '\.ssh|vimrc'
+```
+
+You can combine this with `-c` to have fine-grained control over which modified
+targets you like to copy back to the dotfiles repo.
+
+```sh
+$ dotcp -c -i 'ssh'
+$ git -C $DOTCP_DOTFILES diff
 ```
 
 Run as root. This is a shorthand for
@@ -211,125 +245,122 @@ Here is an example layout of a dotfiles repo
     └── .zshrc
 ```
 
+## Templates
+
+Template files must end in `.dotcp_esh` to be recognized, e.g.
+`foo.conf.dotcp_esh`, `bar.sh.dotcp_esh`. Templates are rendered in a temp dir
+(removing `.dotcp_esh`), compared to target and copied if needed. The diff you
+see (`dotcp -sv`) is between the rendered template and the target file.
+
+The template language in [`esh`][esh] is just POSIX shell. If you can write
+shell code, you can write templates.
+
+The only restriction with templates is that you cannot copy modified targets
+back with `dotcp -c`. You can use a "solve-inverse-problem" approach instead.
+
+```sh
+# shell 1: watch diff to target
+$ watch -n2 "dotcp -sv -i 'foo.conf'"
+
+# shell 2: modify template until there is no diff
+$ vim $DOTCP_DOTFILES/user/path/to/foo.conf.dotcp_esh
+```
+
 
 ## Multi-machine workflow
 
-`dotcp` just copies files from/to a repo and has no knowledge of which
-machine it is on. We use machine-specific branches and rebase which has obvious
-downsides but works ok if only one person maintains the dotfiles repo. We have
-some scripts which help to automate things. Here are some examples where we
-manage 3 machines `foo`, `bar` and `baz`. We assume a branch layout like this:
+Use templates. We worked with machine-specific branches + rebasing in the
+past. Don't do it, it's not fun. A single branch + templates is the way to go.
+
+Example file with template control flow:
 
 ```
-* f5685c8  (origin/foo, foo)
-|
-| * d586006  (origin/bar, bar)
-| |
-| * ed4554c
-| |
-| * 5412e49
-|/
-|
-| * beeec33  (origin/baz, baz)
-| |
-| * f20fc31
-|/
-|
-* 2f45020  (HEAD -> base-bar, origin/master, origin/base-bar, origin/base-foo, origin/base-baz, origin/HEAD, master, base-foo, base-baz)
+Settings for all machines.
+
+<%# This is a template comment -%>
+<% if [ "$(hostname)" = "foo" ]; then -%>
+Settings for machine "foo".
+<% elif [ "$(hostname)" = "bar" ]; then -%>
+Settings for machine "bar".
+<% else -%>
+Settings for all machines except "foo" and "bar".
+<% fi -%>
+
+More settings for all machines.
 ```
 
-We have *two* types of machine-specific branches:
+Templates that result in an empty or whitespace-only file are skipped. Use this
+to deploy files only on some machines.
 
-* Base branches ("bb") `base-foo`, `base-bar` and `base-baz` which should be in
-  sync with `master`. We use those to distribute common changes by merging them
-  into `master`.
+Example for ignoring machine "foo":
 
-* Machine-specific changes are in machine branches ("mb") `foo`, `bar` and
-  `baz` etc. which should be (re-)based on top of their base branch
-  `base-{foo,bar,baz}` and therefore also on top of `master`.
+```
+<% if [ "$(hostname)" != "foo" ]; then -%>
+Settings for all machines but "foo".
+<% fi -%>
+```
 
-The idea is to use merging for `master` and `base-foo`, `base-bar`, `base-baz`
-so that we can use a standard git workflow. We only rebase and then need to
-force-push the machine branches `foo`, `bar` and `baz`.
+## More on including and excluding
 
-### Distribute local changes in machine foo's base branch
+Besides using templates to exclude single files, you can include/exclude
+files/dirs/links dynamically at deploy time based on regexes using the
+`-i`/`-x` options. We don't support ignore files as [`chezmoi`][chezmoi] does,
+but you can achieve the same by storing include/exclude regex patterns in your
+dotfiles repo and pass them to `dotcp`. For instance add machine-specific
+deploy scripts in your dotfiles repo outside of `$DOTCP_DOTFILES{user,root}`.
+A `deploy_foo.sh` script could be
 
 ```sh
-$ git checkout base-foo
+#!/bin/sh
 
-# < ... hack hack hack ...>
+# include
+dotcp -i '\.vim|zshrc' $@
 
-$ git commit ...
+# or exclude the rest, whichever is the smaller regex
+##dotcp -x 'i3|soft/bin|ipython|mutt|jupyter|ssh' $@
 ```
 
-Now we have a branch situation similar to this:
+Another option is to have a file, say `foo.exclude` that lists the regexes, for
+instance on one line
 
 ```
-* c55d213  (HEAD -> base-foo)
-|
-| * f5685c8  (origin/foo, foo)
-|/
-|
-| * d586006  (origin/bar, bar)
-| |
-| * ed4554c
-| |
-| * 5412e49
-|/
-|
-| * beeec33  (origin/baz, baz)
-| |
-| * f20fc31
-|/
-|
-* 2f45020  (origin/master, origin/base-bar, origin/base-foo, origin/base-baz, origin/HEAD, master, base-bar, base-baz)
+i3|soft/bin|ipython|mutt|jupyter|ssh
 ```
-
-`base-foo` is now ahead of `master`, `base-bar` and `base-baz`. We need to
-merge them to bring `master` and the other base branches up to date. Then we
-may want to rebase machine branches onto their respective base branch. Finally
-we push the changes.
 
 ```sh
-# Update master and all other base-bar base-baz to new base-foo
-$ dotcp-merge-bbs
-
-# Rebase each machine branch (foo, bar, baz) onto it's base branch
-# base-{foo,bar,baz}. This is optional if you mostly deploy from branch base-foo
-# rather than branch foo if (i) the changes in foo have been deployed once and
-# don't change, as such the commits base-foo...foo are the same and (ii)
-# deploying base-foo doesn't revert changes in foo. In this case you can work w/
-# base-foo and only rebase foo onto base-foo (and deploy from it) if changes are
-# added to foo.
-$ dotcp-rebase-mb-to-bb
-
-# Push master and base-foo, base-bar, base-baz; force-push rebased foo, bar,
-# baz
-$ dotcp-push
+$ dotcp -x $(cat foo.exclude)
 ```
 
-### Fetch and update from upstream
+or one per line
+
+```
+i3
+soft/bin
+ipython
+mutt
+jupyter
+ssh
+```
+
 
 ```sh
-$ git fetch
-
-# Merge all base branches and master
-$ dotcp-merge-bbs
-
-# Update all machine branches to upstream state. Again this is optional in case
-# you work mainly with base-{foo,bar,baz}.
-$ dotcp-force-reset-mb-to-upstream
+$ dotcp -x $(paste -sd '|' foo.exclude)
 ```
 
-Sometimes you may need to do a bit more git trickery, such as
+So with a tiny bit of scripting, you have full flexibility.
 
-```sh
-# Bring only base branches up to date which can be fast-forward merged.
-$ dotcp-merge-bbs --ff-only
 
-# Manually update a locally outdated base branch if needed
-$ git branch -f base-foo origin/base-foo
-```
+# Related tools
+
+Overview of other dotfiles managers: <https://dotfiles.github.io>
+
+The most similar tool in terms of workflow is [`chezmoi`][chezmoi]. It is a
+great tool and it is more powerful (e.g. ignore files) but also more
+opinionated in some places. The reason we don't use it is that [it imposes
+restrictions on file permissions][chezmoi_perms]. There are good reasons for it
+(e.g. Windows support), whereas we only work on `*nix` systems and can thus
+leverage the file system directly.
+
 
 # Tests
 
@@ -343,7 +374,6 @@ $ ./run.sh
 $ ./run.sh test_foo.sh
 ```
 
-# Notes
-
-`tools/backup.sh` is [a copy of backup.sh from
-shelltools](https://github.com/elcorto/shelltools/blob/master/bin/backup).
+[esh]: https://github.com/jirutka/esh
+[chezmoi]: https://www.chezmoi.io
+[chezmoi_perms]: https://www.chezmoi.io/user-guide/frequently-asked-questions/design/#why-does-chezmoi-use-weird-filenames

@@ -1,0 +1,3 @@
+[submodule "tools/submods/esh"]
+	path = tools/submods/esh
+	url = git@github.com:jirutka/esh.git

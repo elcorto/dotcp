@@ -49,6 +49,7 @@ EOF
 here=$(dirname $(readlink -f $0))
 tools_dir=$here/../tools
 . $tools_dir/common.sh
+ESH=$tools_dir/submods/esh/esh
 
 
 ft_file=$(filetype $tools_dir/filetypes/dir/file)
@@ -227,7 +228,7 @@ main(){
             [ -z "$templ_render_dir" ] && templ_render_dir=$(tmpdir dotcp_templ_render)
             src=$templ_render_dir/$(echo $_src | sed -r -e 's/\.dotcp_esh$//' -e "s|$src_dr/||")
             mkdir -p $(dirname $src)
-            esh $_src > $src
+            $ESH $_src > $src
             used_src_dr=$templ_render_dir
         else
             src=$_src

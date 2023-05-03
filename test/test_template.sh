@@ -15,11 +15,11 @@ prefix=dotcp_$(basename $0)
 tmp_base=/tmp
 
 deploy_dir=$(mktemp --tmpdir=$tmp_base -d ${prefix}_deploy_dir_XXXXXXXX)
-template=$src_dir/user/b.dotcp_jinja
+template=$src_dir/user/b.dotcp_esh
 template_tgt=$deploy_dir/b
 
 cat > $template << EOF
-hostname: {{ hostname }}
+hostname: <% hostname -%>
 EOF
 
 echo "src_dir: $src_dir"
@@ -30,7 +30,6 @@ tree -al $deploy_dir
 # Do a deploy. Test that replacement worked.
 $dotcp_exe -S $src_dir -d $deploy_dir
 assert_string_equal "hostname: $(hostname)" "$(cat $template_tgt)"
-
 
 # Simulate. Check correct diff display, using the rendered template as source.
 echo "some b content" > $template_tgt

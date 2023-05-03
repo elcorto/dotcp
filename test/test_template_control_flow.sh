@@ -15,16 +15,16 @@ prefix=dotcp_$(basename $0)
 tmp_base=/tmp
 
 deploy_dir=$(mktemp --tmpdir=$tmp_base -d ${prefix}_deploy_dir_XXXXXXXX)
-template=$src_dir/user/c.dotcp_jinja
+template=$src_dir/user/c.dotcp_esh
 template_tgt=$deploy_dir/c
 
 hn=$(hostname)
 cat > $template << EOF
-{% if hostname == "$hn" -%}
+<% if [ \$(hostname) = "$hn" ]; then -%>
 we are on $hn
-{% else -%}
+<% else -%>
 something else
-{% endif -%}
+<% fi -%>
 EOF
 
 echo "src_dir: $src_dir"

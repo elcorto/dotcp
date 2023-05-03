@@ -64,11 +64,6 @@ cleanup(){
 }
 
 
-run_j2(){
-    j2 --customize $here/../j2_custom.py $1
-}
-
-
 cmdline=$(getopt -o hcsS:kpevVd:x:i:rm: -lsim-deploy-dir: -- "$@")
 eval set -- "$cmdline"
 while [ $# -gt 0 ]; do
@@ -216,7 +211,7 @@ main(){
     #
     # with templates:
     #
-    # dotfiles/config/user/.foo/file.dotcp_jinja
+    # dotfiles/config/user/.foo/file.dotcp_esh
     # ^^^^^^^^^^^^^^^------------------------------------------- $DOTCP_DOTFILES
     # ^^^^^^^^^^^^^^^^^^^^-------------------------------------- src_dr
     #
@@ -227,12 +222,12 @@ main(){
     for _src in $(find $src_dr -type f -o -type l -a ! -name "*.swp"); do
 
         # render templates
-        if echo $_src | grep -qE '\.dotcp_jinja$'; then
+        if echo $_src | grep -qE '\.dotcp_esh$'; then
             $reverse_cp_commands && err "-c doesn't work for templates, file: $_src"
             [ -z "$templ_render_dir" ] && templ_render_dir=$(tmpdir dotcp_templ_render)
-            src=$templ_render_dir/$(echo $_src | sed -r -e 's/\.dotcp_jinja$//' -e "s|$src_dr/||")
+            src=$templ_render_dir/$(echo $_src | sed -r -e 's/\.dotcp_esh$//' -e "s|$src_dr/||")
             mkdir -p $(dirname $src)
-            run_j2 $_src > $src
+            esh $_src > $src
             used_src_dr=$templ_render_dir
         else
             src=$_src

@@ -50,6 +50,7 @@ here=$(dirname $(readlink -f $0))
 tools_dir=$here/../tools
 . $tools_dir/common.sh
 ESH=$tools_dir/submods/esh/esh
+BACKUP=$tools_dir/submods/shelltools/bin/backup
 
 
 ft_file=$(filetype $tools_dir/filetypes/dir/file)
@@ -321,11 +322,11 @@ main(){
                     echo "$(diff -Naur $old $new)"
                 fi
             fi
-            # backup.sh -d : backup and delete, ensure clear dir when
+            # backup -d : backup and delete, ensure clear dir when
             # copying new file
-            # backup.sh -P : copy links as links
+            # backup -P : copy links as links
             if ! $simulate && exists "$tgt"; then
-                $tools_dir/backup.sh -dP -p $bak_suffix $tgt
+                $BACKUP -dP -p $bak_suffix $tgt
             fi
             mkdir -p $vopt $(dirname $tgt)
             cp $cp_opts $vopt $src $tgt

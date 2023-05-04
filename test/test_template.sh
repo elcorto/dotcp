@@ -5,6 +5,8 @@
 test_cleanup(){
     rm -rf $deploy_dir
     rm -rf $template
+    # trap here disables cleanup trap in dotcp
+    rm -rf /dev/shm/dotcp_templ_render* /tmp/dotcp_templ_render*
     ##echo "skip cleanup"
 }
 

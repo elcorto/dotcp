@@ -62,3 +62,13 @@ if $dotcp_exe -S $src_dir -d $deploy_dir -sc; then
 else
     [ $? -eq 1 ] && echo "ok, -c caught" || err "incorrect retcode"
 fi
+
+# Make sure that copy back works for non-template files. We still have the
+# modified template_tgt from above and that would give an error with -c. If we
+# only include /path/to/a, it must pass.
+echo "new a content" > $deploy_dir/a
+if $dotcp_exe -S $src_dir -d $deploy_dir -sc -i '/a'; then
+    echo "ok, copy back passed"
+else
+    err "test failed, exit code $?"
+fi

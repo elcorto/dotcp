@@ -225,7 +225,6 @@ main(){
 
         # render templates
         if echo $_src | grep -qE '\.dotcp_esh$'; then
-            $reverse_cp_commands && err "-c doesn't work for templates, file: $_src"
             [ -z "$templ_render_dir" ] && templ_render_dir=$(tmpdir dotcp_templ_render)
             src=$templ_render_dir/$(echo $_src | sed -r -e 's/\.dotcp_esh$//' -e "s|$src_dr/||")
             mkdir -p $(dirname $src)
@@ -235,9 +234,11 @@ main(){
             # Restore file perms after template render.
             chmod $(stat -c %a $_src) $src
             used_src_dr=$templ_render_dir
+            src_from_template=true
         else
             src=$_src
             used_src_dr=$src_dr
+            src_from_template=false
         fi
 
         # apply include / exclude pattern
@@ -273,7 +274,7 @@ main(){
             same_hash $src $tgt && continue
         fi
         if islink "$src" && islink "$tgt"; then
-            # compare link targets
+            # compare link targets (path names, not content via hash)
             [ "$(readlink $src)" = "$(readlink $tgt)" ] && continue
         fi
 
@@ -289,6 +290,7 @@ main(){
 
         # Commands for the reverse: tgt (file system) --> src (here)
         if $reverse_cp_commands; then
+            $src_from_template && err "-c doesn't work for templates, file: $_src"
             if exists $real_tgt; then
                 copy_cmd="cp $cp_opts $real_tgt $src"
                 $is_root && copy_cmd="sudo $copy_cmd; sudo chown $user:$user $src"

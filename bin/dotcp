@@ -14,8 +14,8 @@ reverse_cp_commands=false
 keep_sim_deploy_dir=false
 only_existing=false
 bak_suffix='.bak-dotcp-'
-exclude=''
-include=''
+exclude=
+include=
 run_as_root=false
 mtime_mode=r
 
@@ -40,7 +40,7 @@ Options
     -m : how to treat modification times in diff: (r)epo is new (default),
          (t)arget is new, (a)uto = use file mtime
     -d : config files will be copied to <deploy_dir>/
-        [default: \$HOME]
+         [default: \$HOME]
     --sim-deploy-dir : temp dir for -s, default is auto-generated
 EOF
 }
@@ -49,10 +49,17 @@ EOF
 here=$(dirname $(readlink -f $0))
 tools_dir=$here/../tools
 . $tools_dir/common.sh
+
 ESH=$tools_dir/submods/esh/esh
 BACKUP=$tools_dir/submods/shelltools/bin/backup
 
 
+# These are defined here even though they are used in functions defined in
+# tools/common.sh . The reason is that we need a reliable way to provide the
+# path tools_dir which is not possible from within tools/common.sh, since that
+# script is just sourced and doesn't know its own location in the source tree,
+# AFAWK. If there is a way, PRs welcome! Also yes, don't use shell for more
+# than simple scripts. Next time we use Rust, promise!
 ft_file=$(filetype $tools_dir/filetypes/dir/file)
 ft_link=$(filetype $tools_dir/filetypes/dir/link)
 ft_dir=$(filetype $tools_dir/filetypes/dir)
@@ -182,7 +189,7 @@ main(){
         is_root=false
     fi
 
-    # dotfiles/config/{user,root}
+    # $DOTCP_DOTFILES/{user,root}
     src_dr="$src_dr_base/$who"
     exists $src_dr || err "src_dr not found: $src_dr"
 
@@ -191,14 +198,12 @@ main(){
     isdir "$deploy_dir" || err "dir '$deploy_dir' doesn't exist"
 
     if $simulate; then
-        if [ -z "$sim_deploy_dir" ]; then
-            sim_deploy_dir=$(tmpdir dotcp_simulate)
-        fi
+        [ -z "$sim_deploy_dir" ] && sim_deploy_dir=$(tmpdir dotcp_simulate)
         [ $verbose -ge 1 ] && echo "simulate: installing into $sim_deploy_dir"
         trap cleanup EXIT STOP INT QUIT KILL ABRT TERM HUP
     fi
 
-    # dotfiles/config/user/.foo/file ---- src, _src
+    # $DOTCP_DOTFILES/user/.foo/file ---- src, _src
     # ^^^^^^^^^^^^^^^-------------------- src_dr_base
     # ^^^^^^^^^^^^^^^^^^^^--------------- src_dr, used_src_dr
     #                      ^^^^^^^^^----- install_path
@@ -210,7 +215,7 @@ main(){
     #
     # with templates:
     #
-    # dotfiles/config/user/.foo/file.dotcp_esh ----------------- _src
+    # $DOTCP_DOTFILES/user/.foo/file.dotcp_esh ----------------- _src
     # ^^^^^^^^^^^^^^^------------------------------------------- src_dr_base
     # ^^^^^^^^^^^^^^^^^^^^-------------------------------------- src_dr
     #
@@ -222,14 +227,22 @@ main(){
 
         # render templates
         if echo $_src | grep -qE '\.dotcp_esh$'; then
+            # Create templ_render_dir once, but only if we encounter templates
+            # at all.
             [ -z "$templ_render_dir" ] && templ_render_dir=$(tmpdir dotcp_templ_render)
-            src=$templ_render_dir/$(echo $_src | sed -r -e 's/\.dotcp_esh$//' -e "s|$src_dr/||")
+
+            src=$templ_render_dir/$(echo $_src \
+                | sed -r -e 's/\.dotcp_esh$//' -e "s|$src_dr/||")
             mkdir -p $(dirname $src)
+
             $ESH $_src > $src
+
             # If rendered template is empty, skip ahead.
             [ -z "$(tr -d ' ' < $src)" ] && continue
+
             # Restore file perms after template render.
             chmod $(stat -c %a $_src) $src
+
             used_src_dr=$templ_render_dir
             src_from_template=true
         else

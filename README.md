@@ -175,73 +175,24 @@ $DOTCP_DOTFILES/root
 
 where root is optional and only used if you run `dotcp` as root.
 
-Here is an example layout of a dotfiles repo
-(`DOTCP_DOTFILES=/path/to/dotfiles/config`).
+Here is an example layout of a dotfiles repo, showing the content of
+`$DOTCP_DOTFILES`.
+
 
 ```
-/path/to/dotfiles/config/
 ├── root
 │   ├── etc
-│   │   ├── apt
-│   │   │   ├── apt.conf.d
-│   │   │   │   ├── 99default-release
-│   │   │   │   └── 99no-recommends
-│   │   │   ├── sources.list
-│   │   │   └── sources.list.d
-│   │   │       └── signal.list
-│   │   ├── modprobe.d
-│   │   │   └── blacklist.conf
 │   │   └── X11
 │   │       └── xorg.conf
-│   ├── root
-│   │   └── .vimrc
-│   └── usr
-│       └── share
-│           └── X11
-│               └── xkb
-│                   └── symbols
-│                       ├── lwin
-│                       └── us_custom
+│   └── root
+│       └── .vimrc
 └── user
-    ├── .bin
-    │   ├── pass-ssh-askpass.sh
-    │   └── pass-sudo-askpass.sh
     ├── .config
     │   └── i3
-    │       ├── autolock.sh
-    │       ├── config
-    │       ├── conky
-    │       │   ├── conky-i3bar.sh
-    │       │   ├── conkyrc.lua
-[...]
-    ├── .gitconfig
-    ├── .mutt
-    │   ├── common.sh
-    │   ├── muttrc -> muttrc.imap
-[...]
-    ├── .ondirrc
-    ├── .pass_extensions
-    │   └── cl.bash -> /home/elcorto/soft/git/pass-cl/cl.bash
+    │       └── config
     ├── .profile -> .zprofile
-    ├── soft
-    │   └── bin
-    │       └── restart-agents.zsh
     ├── .ssh
     │   └── config
-    ├── .tmux.conf
-    ├── .vim
-    │   ├── after
-    │   │   └── ftplugin
-    │   │       ├── rst.vim
-[...]
-    ├── .vimrc
-    ├── .Xresources
-    ├── .xsettingsd
-    ├── .zprofile
-    ├── .zsh
-    │   └── completions
-    │       ├── _jq
-    │       └── README.rst
     └── .zshrc
 ```
 

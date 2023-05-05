@@ -174,7 +174,7 @@ main(){
     user=$(stat -c %U $0)
     if [ $(id -u) -eq 0 ]; then
         is_root=true
-        echo "note: you are root: setting deploy_dir=/"
+        [ $verbose -ge 1 ] && echo "note: you are root: setting deploy_dir=/"
         deploy_dir='/'
         who="root"
     else
@@ -186,19 +186,17 @@ main(){
     src_dr="$src_dr_base/$who"
     exists $src_dr || err "src_dr not found: $src_dr"
 
-    echo "source directory: $src_dr"
-    echo "target directory: $deploy_dir"
+    [ $verbose -ge 1 ] && echo "source directory: $src_dr"
+    [ $verbose -ge 1 ] && echo "target directory: $deploy_dir"
     isdir "$deploy_dir" || err "dir '$deploy_dir' doesn't exist"
 
     if $simulate; then
         if [ -z "$sim_deploy_dir" ]; then
             sim_deploy_dir=$(tmpdir dotcp_simulate)
         fi
-        echo "simulate: installing into $sim_deploy_dir"
+        [ $verbose -ge 1 ] && echo "simulate: installing into $sim_deploy_dir"
         trap cleanup EXIT STOP INT QUIT KILL ABRT TERM HUP
     fi
-
-    echo "files/links to copy"
 
     # dotfiles/config/user/.foo/file ---- src, _src
     # ^^^^^^^^^^^^^^^-------------------- src_dr_base

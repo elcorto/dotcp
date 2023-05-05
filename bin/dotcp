@@ -66,10 +66,20 @@ ft_dir=$(filetype $tools_dir/filetypes/dir)
 
 
 cleanup(){
-    if ! $keep_sim_deploy_dir; then
-        [ -d $sim_deploy_dir ] && rm -rf $sim_deploy_dir
+    if $simulate; then
+        if ! $keep_sim_deploy_dir; then
+            [ -n "$sim_deploy_dir" -a -d $sim_deploy_dir ] \
+                && rm -rf $sim_deploy_dir
+        fi
     fi
-    [ -d $templ_render_dir ] && rm -rf $templ_render_dir
+
+    # Must use if ... fi rather than a command chain [ condition ] && do_stuff
+    # such that the exit code of cleanup() is always 0. If cleanup() has exit
+    # code != 0, it replaces the exit code of the dotcp script, which will make
+    # dotcp appear to have failed.
+    if [ -n "$templ_render_dir" -a -d $templ_render_dir ]; then
+        rm -rf $templ_render_dir
+    fi
 }
 
 
@@ -200,8 +210,9 @@ main(){
     if $simulate; then
         [ -z "$sim_deploy_dir" ] && sim_deploy_dir=$(tmpdir dotcp_simulate)
         [ $verbose -ge 1 ] && echo "simulate: installing into $sim_deploy_dir"
-        trap cleanup EXIT STOP INT QUIT KILL ABRT TERM HUP
     fi
+
+    trap cleanup EXIT STOP INT QUIT KILL ABRT TERM HUP
 
     # $DOTCP_DOTFILES/user/.foo/file ---- src, _src
     # ^^^^^^^^^^^^^^^-------------------- src_dr_base

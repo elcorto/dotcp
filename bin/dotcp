@@ -200,10 +200,9 @@ main(){
 
     echo "files/links to copy"
 
-    # dotfiles/config/user/.foo/file
-    # ^^^^^^^^^^^^^^^-------------------- $DOTCP_DOTFILES
-    # ^^^^^^^^^^^^^^^^^^^^--------------- src_dr
-    # ^^^^^^^^^^^^^^^^^^^^--------------- used_src_dr
+    # dotfiles/config/user/.foo/file ---- src, _src
+    # ^^^^^^^^^^^^^^^-------------------- src_dr_base
+    # ^^^^^^^^^^^^^^^^^^^^--------------- src_dr, used_src_dr
     #                      ^^^^^^^^^----- install_path
     #
     #
@@ -213,11 +212,11 @@ main(){
     #
     # with templates:
     #
-    # dotfiles/config/user/.foo/file.dotcp_esh
-    # ^^^^^^^^^^^^^^^------------------------------------------- $DOTCP_DOTFILES
+    # dotfiles/config/user/.foo/file.dotcp_esh ----------------- _src
+    # ^^^^^^^^^^^^^^^------------------------------------------- src_dr_base
     # ^^^^^^^^^^^^^^^^^^^^-------------------------------------- src_dr
     #
-    # /dev/shm/dotcp_templ_render_hsjqwjy717y32u/.foo/file
+    # /dev/shm/dotcp_templ_render_hsjqwjy717y32u/.foo/file ---- src
     # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -------------- used_src_dr
     #                                            ^^^^^^^^^----- install_path
     #

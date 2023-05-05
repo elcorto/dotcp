@@ -241,27 +241,27 @@ main(){
             src_from_template=false
         fi
 
+        install_path=$(echo $src | sed "s|$used_src_dr/||")
+        real_tgt=$deploy_dir/$install_path
+
         # apply include / exclude pattern
         if [ -n "$exclude" ]; then
-            if echo "$src" | grep -qE "$exclude"; then
-                [ $verbose -ge 2 ] && echo "exclude: $src"
+            if echo "$install_path" | grep -qE "$exclude"; then
+                [ $verbose -ge 2 ] && echo "exclude: $install_path"
                 continue
             else
-                [ $verbose -ge 2 ] && echo "include: $src"
+                [ $verbose -ge 2 ] && echo "include: $install_path"
             fi
         elif [ -n "$include" ]; then
-            if echo "$src" | grep -qE "$include"; then
-                [ $verbose -ge 2 ] && echo "include: $src"
+            if echo "$install_path" | grep -qE "$include"; then
+                [ $verbose -ge 2 ] && echo "include: $install_path"
             else
-                [ $verbose -ge 2 ] && echo "exclude: $src"
+                [ $verbose -ge 2 ] && echo "exclude: $install_path"
                 continue
             fi
         else
-            [ $verbose -ge 2 ] && echo "include: $src"
+            [ $verbose -ge 2 ] && echo "include: $install_path"
         fi
-
-        install_path=$(echo $src | sed "s|$used_src_dr/||")
-        real_tgt=$deploy_dir/$install_path
 
         # whether to treat existing targets only
         if $only_existing; then

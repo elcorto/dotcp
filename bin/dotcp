@@ -168,7 +168,7 @@ main(){
 
     # mv -v, cp -v
     [ $verbose -ge 2 ] && vopt='-v' || vopt=
-    cp_opts="-rd"
+    cp_opts="--preserve=mode,links,xattr --no-dereference --recursive"
 
     # the non-root user is the owner of this script
     user=$(stat -c %U $0)

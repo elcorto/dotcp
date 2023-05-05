@@ -336,8 +336,9 @@ main(){
             fi
             mkdir -p $vopt $(dirname $tgt)
             cp $cp_opts $vopt $src $tgt
+            # Our cp_opts should already switch the owner to root when using
+            # sudo, but just to be safe.
             if $is_root; then
-                chmod go+r $tgt
                 chown root:root $tgt
             fi
         fi

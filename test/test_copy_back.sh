@@ -12,6 +12,7 @@ trap test_cleanup EXIT STOP INT QUIT KILL ABRT TERM HUP
 src_dir=src
 prefix=dotcp_$(basename $0)
 tmp_base=/tmp
+dotcp_exe=$(readlink -f $(dirname $0)/../bin/dotcp)
 
 deploy_dir=$(mktemp --tmpdir=$tmp_base -d ${prefix}_deploy_dir_XXXXXXXX)
 src=$src_dir/user/a

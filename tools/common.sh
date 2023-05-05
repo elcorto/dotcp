@@ -126,6 +126,3 @@ isdir(){
 islink(){
     [ -L $1 ] && [ "$(filetype $1)" = "$ft_link" ]
 }
-
-
-dotcp_exe=$(readlink -f $(dirname $0)/../bin/dotcp)

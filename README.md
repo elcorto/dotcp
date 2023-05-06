@@ -2,8 +2,7 @@
 
 `dotcp` is a lightweight configuration manager for dotfiles. It is a single
 shell script used to keep a dotfiles location (usually a git repo) and a target
-machine in sync.
-
+location (usually your `$HOME`) in sync.
 
 ## Install
 
@@ -20,13 +19,13 @@ are written in POSIX shell code and are provided as git submodules
 
 ## Features
 
-* copy files from a dotfiles repo to a target location (e.g. `$HOME`)
+* copy files from a dotfiles location to a target location (e.g. `$HOME`)
 * check for file updates based on file hashes
 * backup of target files before updates
 * simulate what would be updated (`-s`)
-* copy target updates back to the dotfiles repo (`-c`, simulate with
+* copy target updates back to the dotfiles location (`-c`, simulate with
   `-sc`)
-* show diffs between dotfiles repo and target (`-spv`)
+* show diffs between dotfiles location and target (`-sv` or `-spv`)
 * include/exclude files (`-i`/`-x`).
 * run as root (`-r`)
 * template support (e.g. for multi-machine workflows)
@@ -34,11 +33,16 @@ are written in POSIX shell code and are provided as git submodules
 
 # Usage
 
-Copy config files and dirs from `<source_dir>` to `<deploy_dir>`.
+Copy files from `<source_dir>` to `<deploy_dir>` if they are
+different from the state in `<source_dir>`:
+
+```sh
+$ dotcp
+```
 
 Only individual files are copied, so `<source_dir>/.ssh/config` will
 only overwrite `~/.ssh/config` and not any other file (like ssh keys) in
-there.
+there. Directories are created as needed (e.g. `.ssh/` should it not exist).
 
 Depending on who runs this script, we set
 
@@ -57,8 +61,9 @@ $ find ~/ -maxdepth 5 -wholename "*.bak-dotcp-*" | xargs rm -rv
 ```
 
 Since `dotcp` only considers files in `$DOTCP_DOTFILES/{user,root}`, you can
-place whatever else you like in the repo but outside of these dirs, for
+place whatever else you like in there but outside of these dirs, for
 instance some "admin notes", a README file or additional scripts.
+
 
 ## Options
 
@@ -71,7 +76,7 @@ Options
     -s : simulate
     -k : keep simulate files
     -e : treat only files which already exist
-    -c : run reverse copy commands (target -> dotfiles repo)
+    -c : run reverse copy commands (target -> dotfiles location)
     -S : source base dir [default: $DOTCP_DOTFILES or $HOME/dotfiles]
     -v : verbose, shows diffs
     -V : more verbose, print all considered file names, also more cp -v
@@ -79,10 +84,10 @@ Options
     -x : exclude regex
     -i : include regex, use either -i or -x
     -r : run as root (using sudo)
-    -m : how to treat modification times in diff: (r)epo is new (default),
+    -m : how to treat modification times in diff: (s)ource is new (default),
          (t)arget is new, (a)uto = use file mtime
     -d : config files will be copied to <deploy_dir>/
-        [default: $HOME]
+         [default: $HOME]
     --sim-deploy-dir : temp dir for -s, default is auto-generated
 ```
 
@@ -109,25 +114,26 @@ $ dotcp -spv
 The default diff mode (modification time option `-m`) is
 
 ```sh
-$ dotcp -spv -m r
+$ dotcp -spv -m s
 ```
 
-`-m r` treats the dotfiles repo state as new. This mode best shows the effect
-of copying files, i.e. how disk files will be changed when running `dotcp`. Use
-`-m t` to treat the disk target files as new, for instance when you made new
-target file changes. Use `-m a` to determine old/new based on file
-modification times. Note that `-m` only affects diff display when using `-v`,
-not what `dotcp` does, which is just copying files.
+`-m s` treats the dotfiles source state as new. This mode best shows the effect
+of copying files, i.e. how target files will be changed when running `dotcp`.
+Use `-m t` to treat the target files as new, for instance when you made new
+target file changes. Use `-m a` to determine old/new based on file modification
+times. Note that `-m` only affects diff display when using `-v`, not what
+`dotcp` does, which is just copying files.
 
-If you have changed target files and need to add the changes to the
-dotfiles repo. Show commands to copy changed target files the dotfiles
-repo (i.e. the reverse of installing them):
+If you have changed target files and need to add the changes to the dotfiles
+location, use `-c` ("copy back"). Show commands to copy changed target files
+the dotfiles location (i.e. the reverse of installing them):
 
 ```sh
 $ dotcp -sc
 ```
 
-and actually execute them (remove simulate):
+and actually execute them (remove simulate). If `$DOTCP_DOTFILES` is a git
+repo, you probably want to check the diff and later commit the change.
 
 ```sh
 $ dotcp -c
@@ -147,7 +153,7 @@ $ dotcp -x '\.ssh|vimrc'
 ```
 
 You can combine this with `-c` to have fine-grained control over which modified
-targets you like to copy back to the dotfiles repo.
+targets you like to copy back to the dotfiles location.
 
 ```sh
 $ dotcp -c -i 'ssh'
@@ -162,11 +168,11 @@ like `SUDO_ASKPASS`):
 $ dotcp -r
 ```
 
-## Dotfiles repo layout
+## Dotfiles location layout
 
 Have the files to copy in a dir `$DOTCP_DOTFILES`, typically this will
 be a git repo with your dotfiles (or any files you need to keep in sync,
-for that matter). We assume:
+for that matter). We require:
 
 ```sh
 $DOTCP_DOTFILES/user
@@ -175,8 +181,7 @@ $DOTCP_DOTFILES/root
 
 where root is optional and only used if you run `dotcp` as root.
 
-Here is an example layout of a dotfiles repo, showing the content of
-`$DOTCP_DOTFILES`.
+Here is an example layout:
 
 
 ```
@@ -257,9 +262,9 @@ Besides using templates to exclude single files, you can include/exclude
 files/dirs/links dynamically at deploy time based on regexes using the
 `-i`/`-x` options. We don't support ignore files as [`chezmoi`][chezmoi] does,
 but you can achieve the same by storing include/exclude regex patterns in your
-dotfiles repo and pass them to `dotcp`. For instance add machine-specific
-deploy scripts in your dotfiles repo outside of `$DOTCP_DOTFILES{user,root}`.
-A `deploy_foo.sh` script could be
+dotfiles location and pass them to `dotcp`. For instance add machine-specific
+deploy scripts in your dotfiles location outside of
+`$DOTCP_DOTFILES/{user,root}`. A `deploy_foo.sh` script could be
 
 ```sh
 #!/bin/sh
@@ -301,17 +306,23 @@ $ dotcp -x $(paste -sd '|' foo.exclude)
 So with a tiny bit of scripting, you have full flexibility.
 
 
-# Related tools
+# Scope and related tools
 
 Overview of other dotfiles managers: <https://dotfiles.github.io>
 
-The most similar tool in terms of workflow is [`chezmoi`][chezmoi]. It is a
-great tool and it is more powerful (e.g. ignore files) but also more
-opinionated in some places. The reason we don't use it is that [it imposes
-restrictions on file permissions][chezmoi_perms]. There are good reasons for it
-(e.g. Windows support), whereas we only work on `*nix` systems and can thus
-leverage the file system directly.
+The most similar tool in terms of workflow is [`chezmoi`][chezmoi] (dotfiles in
+a git repo, show diffs, copy files). It is a great tool and it is more powerful
+(e.g. ignore files) but also more opinionated in some places, such as
+[restrictions on file permissions][chezmoi_perms].
 
+Even though `$DOTCP_DOTFILES` will most likely be a git repo (or whatever your
+favorite source control tool is), it doesn't have to be. `dotcp` doesn't know
+or care where `$DOTCP_DOTFILES` comes from. What you do there after e.g. `dotcp
+-c` is up to you.
+
+Further, there is nothing special about "dotfiles" as far as `dotcp` is
+concerned. Think of it as a file copy tool (hence the name) that helps you
+manage a defined set of files between source and target locations.
 
 # Tests
 

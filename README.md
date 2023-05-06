@@ -76,7 +76,7 @@ Options
     -s : simulate
     -k : keep simulate files
     -e : treat only files which already exist
-    -c : run reverse copy commands (target -> dotfiles location)
+    -c : copy target back to $DOTCP_DOTFILES/{user,root}/path/to/file
     -S : source base dir [default: $DOTCP_DOTFILES or $HOME/dotfiles]
     -v : verbose, shows diffs
     -V : more verbose, print all considered file names, also more cp -v
@@ -84,8 +84,9 @@ Options
     -x : exclude regex
     -i : include regex, use either -i or -x
     -r : run as root (using sudo)
-    -m : how to treat modification times in diff: (s)ource is new (default),
+    -m : how to treat modification times in diff: (s)ource is new,
          (t)arget is new, (a)uto = use file mtime
+         [default: s]
     -d : config files will be copied to <deploy_dir>/
          [default: $HOME]
     --sim-deploy-dir : temp dir for -s, default is auto-generated

@@ -69,7 +69,7 @@ ft_dir=$(filetype $tools_dir/filetypes/dir)
 cleanup(){
     if $simulate; then
         if ! $keep_sim_deploy_dir; then
-            [ -n "$sim_deploy_dir" -a -d $sim_deploy_dir ] \
+            [ -n "$sim_deploy_dir" -a -d "$sim_deploy_dir" ] \
                 && rm -rf $sim_deploy_dir
         fi
     fi
@@ -78,7 +78,7 @@ cleanup(){
     # such that the exit code of cleanup() is always 0. If cleanup() has exit
     # code != 0, it replaces the exit code of the dotcp script, which will make
     # dotcp appear to have failed.
-    if [ -n "$templ_render_dir" -a -d $templ_render_dir ]; then
+    if [ -n "$templ_render_dir" -a -d "$templ_render_dir" ]; then
         rm -rf $templ_render_dir
     fi
 }

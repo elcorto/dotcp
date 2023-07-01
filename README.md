@@ -19,7 +19,8 @@ are written in POSIX shell code and are provided as git submodules
 
 ## Features
 
-* copy files from a dotfiles location to a target location (e.g. `$HOME`)
+* copy files from a dotfiles location to a target location (a.k.a. "deploy
+  dir", default is `$HOME`)
 * check for file updates based on file hashes
 * backup of target files before updates
 * simulate what would be updated (`-s`)
@@ -40,18 +41,29 @@ different from the state in `<source_dir>`:
 $ dotcp
 ```
 
-Only individual files are copied, so `<source_dir>/.ssh/config` will
-only overwrite `~/.ssh/config` and not any other file (like ssh keys) in
-there. Directories are created as needed (e.g. `.ssh/` should it not exist).
+Only individual files are copied, so `<source_dir>/.ssh/config` will only
+overwrite `~/.ssh/config` and not any other file (like ssh keys) in there.
+Directories are created as needed (e.g. `.ssh/` should it not exist).
 
-Depending on who runs this script, we set
+You can specify the dotfiles location via an environment variable
+`$DOTCP_DOTFILES`. There we expect at least a dir
+
+```sh
+$DOTCP_DOTFILES/user
+```
+
+to exist. If `$DOTCP_DOTFILES` is not set, we use `$HOME/dotfiles`. Use `dotcp
+-S /path/to/dotfiles` to set this dynamically.
+
+Depending who runs `dotcp`, we use
 
 who   | `source_dir`            | `deploy_dir`
 -|-|-
 user  | `$DOTCP_DOTFILES/user`  | `$HOME`
 root  | `$DOTCP_DOTFILES/root`  | `/`
 
-To run as root, you can use `dotcp -r` (details below).
+To run as root, you can use `dotcp -r` (details below). To change the target
+dir, use `dotcp -d /path/to/deploy_dir`.
 
 A backup of each target is made if necessary (with suffix
 `.bak-dotcp-`). To find and delete old backup files, use something like:
@@ -127,7 +139,7 @@ times. Note that `-m` only affects diff display when using `-v`, not what
 
 If you have changed target files and need to add the changes to the dotfiles
 location, use `-c` ("copy back"). Show commands to copy changed target files
-the dotfiles location (i.e. the reverse of installing them):
+back to the dotfiles location (i.e. the reverse of installing them):
 
 ```sh
 $ dotcp -sc
@@ -226,12 +238,19 @@ $ vim $DOTCP_DOTFILES/user/path/to/foo.conf.dotcp_esh
 
 ## Multi-machine workflow
 
-Use templates. We worked with machine-specific branches + rebasing in the
-past. Don't do it, it's not fun. A single branch + templates is the way to go.
+Use
+
+* templates and/or
+* include/exclude regexes (`-i`/`-x` options)
+
+We worked with machine-specific branches + rebasing in the past. Don't do it,
+it's not fun. A single branch + templates + include/exclude is the way to go.
+
+### Templates
 
 Example file with template control flow:
 
-```
+```sh
 Settings for all machines.
 
 <%# This is a template comment -%>
@@ -251,13 +270,13 @@ to deploy files only on some machines.
 
 Example for ignoring machine "foo":
 
-```
+```sh
 <% if [ "$(hostname)" != "foo" ]; then -%>
 Settings for all machines but "foo".
 <% fi -%>
 ```
 
-## More on including and excluding
+### Including and excluding
 
 Besides using templates to exclude single files, you can include/exclude
 files/dirs/links dynamically at deploy time based on regexes using the

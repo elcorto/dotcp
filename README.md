@@ -332,8 +332,9 @@ Overview of other dotfiles managers: <https://dotfiles.github.io>
 
 The most similar tool in terms of workflow is [`chezmoi`][chezmoi] (dotfiles in
 a git repo, show diffs, copy files). It is a great tool and it is more powerful
-(e.g. ignore files) but also more opinionated in some places, such as
-[restrictions on file permissions][chezmoi_perms].
+(e.g. ignore files, some file attrs encoded in file names) but also more
+opinionated in some places such that it doesn't fully fit our workflow and
+tooling needs.
 
 Even though `$DOTCP_DOTFILES` will most likely be a git repo (or whatever your
 favorite source control tool is), it doesn't have to be. `dotcp` doesn't know
@@ -358,4 +359,3 @@ $ ./run.sh test_foo.sh
 
 [esh]: https://github.com/jirutka/esh
 [chezmoi]: https://www.chezmoi.io
-[chezmoi_perms]: https://www.chezmoi.io/user-guide/frequently-asked-questions/design/#why-does-chezmoi-use-weird-filenames

@@ -353,15 +353,33 @@ main(){
             # backup -d : backup and delete, ensure clear dir when
             # copying new file
             # backup -P : copy links as links
-            if ! $simulate && exists "$tgt"; then
-                $BACKUP -dP -p $bak_suffix $tgt
+            if exists "$tgt"; then
+                tgt_perms=$(stat -c %a $tgt)
+                tgt_ownership=$(stat -c %U:%G $tgt)
+                if ! $simulate; then
+                    $BACKUP -dP -p $bak_suffix $tgt
+                fi
+            else
+                tgt_perms=
+                tgt_ownership=
             fi
             mkdir -p $vopt $(dirname $tgt)
             cp $cp_opts $vopt $src $tgt
-            # Our cp_opts should already switch the owner to root when using
-            # sudo, but just to be safe.
-            if $is_root; then
-                chown root:root $tgt
+
+            # Adjust permissions and ownership of target.
+            #
+            # This is only a partial solution and doesn't work if the target
+            # doesn't already exist. A better one would be to do the same as
+            # chezmoi does by encoding this in the file name somehow, since
+            # unfortunately git can't track file mode and ownership.
+            [ -n "$tgt_perms" ] && chmod $tgt_perms $tgt
+            #
+            # In user mode we assume that all files in src_dr and deploy_dir
+            # are owned by user:user (or whatever the ownership of the files in
+            # src_dr is), we just copy stuff. In root mode, there are funky
+            # ownerships other than root:root, such as root:mail etc.
+            if $is_root && [ -n "$tgt_ownership" ]; then
+                chown $tgt_ownership $tgt
             fi
         fi
     done

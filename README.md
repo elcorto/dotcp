@@ -214,7 +214,48 @@ Here is an example layout:
     └── .zshrc
 ```
 
-## Templates
+
+## Multi-machine workflow
+
+Use
+
+* machine-specific files and include mechanisms and/or
+* templates and/or
+* include/exclude regexes (`-i`/`-x` options)
+
+We worked with machine-specific branches + rebasing in the past. Don't do it,
+it's not fun. A single branch is the way to go.
+
+### Machine-specific files
+
+If config files allow the inclusion of other files, use that. This is the
+simplest way to add machine-specific content. For instance your `~/.profile`
+could look like this
+
+```sh
+# ... Settings for all machines ...
+
+if [ $(hostname) = "foo" ]; then
+    . $HOME/.profile.foo
+elif [ $(hostname) = "bar" ]; then
+    . $HOME/.profile.bar
+else
+    # ... Settings for all machines except "foo" and "bar" ...
+fi
+
+# ... More settings for all machines ...
+```
+
+or this more compact one, combining common settings for all machines with
+machine-specific ones.
+
+```sh
+for name in .profile_common .profile.$(hostname); do
+    [ -f $HOME/$name ] && . $HOME/$name
+done
+```
+
+### Templates
 
 Template files must end in `.dotcp_esh` to be recognized, e.g.
 `foo.conf.dotcp_esh`, `bar.sh.dotcp_esh`. Templates are rendered in a temp dir
@@ -224,8 +265,38 @@ see (`dotcp -sv`) is between the rendered template and the target file.
 The template language in [`esh`][esh] is just POSIX shell. If you can write
 shell code, you can write templates.
 
+
+Example file with template control flow:
+
+```sh
+... Settings for all machines ...
+
+<%# This is a template comment -%>
+<% if [ "$(hostname)" = "foo" ]; then -%>
+... Settings for machine "foo" ...
+<% elif [ "$(hostname)" = "bar" ]; then -%>
+... Settings for machine "bar" ...
+<% else -%>
+... Settings for all machines except "foo" and "bar" ...
+<% fi -%>
+
+... More settings for all machines ...
+```
+
+Templates that result in an empty or whitespace-only file are skipped. Use this
+to deploy files only on some machines.
+
+Example for ignoring machine "foo":
+
+```sh
+<% if [ "$(hostname)" != "foo" ]; then -%>
+... Settings for all machines but "foo" ...
+<% fi -%>
+```
+
 The only restriction with templates is that you cannot copy modified targets
-back with `dotcp -c`. You can use a "solve-inverse-problem" approach instead.
+back with `dotcp -c`. You can use a "solve-inverse-problem" approach instead,
+using two shells.
 
 ```sh
 # shell 1: watch diff to target
@@ -236,55 +307,16 @@ $ vim $DOTCP_DOTFILES/user/path/to/foo.conf.dotcp_esh
 ```
 
 
-## Multi-machine workflow
 
-Use
+### Dynamic including and excluding
 
-* templates and/or
-* include/exclude regexes (`-i`/`-x` options)
-
-We worked with machine-specific branches + rebasing in the past. Don't do it,
-it's not fun. A single branch + templates + include/exclude is the way to go.
-
-### Templates
-
-Example file with template control flow:
-
-```sh
-Settings for all machines.
-
-<%# This is a template comment -%>
-<% if [ "$(hostname)" = "foo" ]; then -%>
-Settings for machine "foo".
-<% elif [ "$(hostname)" = "bar" ]; then -%>
-Settings for machine "bar".
-<% else -%>
-Settings for all machines except "foo" and "bar".
-<% fi -%>
-
-More settings for all machines.
-```
-
-Templates that result in an empty or whitespace-only file are skipped. Use this
-to deploy files only on some machines.
-
-Example for ignoring machine "foo":
-
-```sh
-<% if [ "$(hostname)" != "foo" ]; then -%>
-Settings for all machines but "foo".
-<% fi -%>
-```
-
-### Including and excluding
-
-Besides using templates to exclude single files, you can include/exclude
-files/dirs/links dynamically at deploy time based on regexes using the
-`-i`/`-x` options. We don't support ignore files as [`chezmoi`][chezmoi] does,
-but you can achieve the same by storing include/exclude regex patterns in your
-dotfiles location and pass them to `dotcp`. For instance add machine-specific
-deploy scripts in your dotfiles location outside of
-`$DOTCP_DOTFILES/{user,root}`. A `deploy_foo.sh` script could be
+You can include/exclude files/dirs/links dynamically at deploy time based on
+regexes using the `-i`/`-x` options. We don't support ignore files as
+[`chezmoi`][chezmoi] does, but you can achieve the same by storing
+include/exclude regex patterns in your dotfiles location and pass them to
+`dotcp`. For instance add machine-specific deploy scripts in your dotfiles
+location outside of `$DOTCP_DOTFILES/{user,root}`. A `deploy_foo.sh` script
+could be
 
 ```sh
 #!/bin/sh

@@ -92,7 +92,7 @@ while [ $# -gt 0 ]; do
             simulate=true
             ;;
         --sim-deploy-dir)
-            sim_deploy_dir=$2
+            sim_deploy_dir="$(strip_quotes $2)"
             shift
             ;;
         -k)
@@ -133,7 +133,7 @@ while [ $# -gt 0 ]; do
             run_as_root=true
             ;;
         -m)
-            mtime_mode=$2
+            mtime_mode="$(strip_quotes $2)"
             shift
             ;;
         -h)

@@ -1,6 +1,6 @@
 [submodule "tools/submods/esh"]
 	path = tools/submods/esh
-	url = git@github.com:jirutka/esh.git
+	url = https://github.com/jirutka/esh.git
 [submodule "tools/submods/shelltools"]
 	path = tools/submods/shelltools
-	url = git@github.com:elcorto/shelltools.git
+	url = https://github.com/elcorto/shelltools.git

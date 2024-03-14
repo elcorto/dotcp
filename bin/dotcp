@@ -387,7 +387,8 @@ main(){
 
 
 if $usepager; then
-    main | vim -c 'set nomod syn=diff' -c 'map q :q<CR>' -
+    which -s nvim > /dev/null 2>&1 && VIM=nvim || VIM=vim
+    main | $VIM -c 'set nomod syn=diff' -c 'map q :q<CR>' -
 else
     main
 fi

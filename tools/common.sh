@@ -126,3 +126,13 @@ isdir(){
 islink(){
     [ -L $1 ] && [ "$(filetype $1)" = "$ft_link" ]
 }
+
+
+linkok(){
+    # Check if link target exists.
+    if ls -H $1 > /dev/null 2>&1; then
+        return 0
+    else
+        return 1
+    fi
+}

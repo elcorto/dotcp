@@ -372,14 +372,18 @@ main(){
             # doesn't already exist. A better one would be to do the same as
             # chezmoi does by encoding this in the file name somehow, since
             # unfortunately git can't track file mode and ownership.
-            [ -n "$tgt_perms" ] && chmod $tgt_perms $tgt
+            if [ -n "$tgt_perms" ]; then
+                # Skip chmod on broken links since that exits != 0 and the
+                # script stops here since set -e.
+                islink "$tgt" && ! linkok "$tgt" || chmod $tgt_perms $tgt
+            fi
             #
             # In user mode we assume that all files in src_dr and deploy_dir
             # are owned by user:user (or whatever the ownership of the files in
             # src_dr is), we just copy stuff. In root mode, there are funky
             # ownerships other than root:root, such as root:mail etc.
             if $is_root && [ -n "$tgt_ownership" ]; then
-                chown $tgt_ownership $tgt
+                islink "$tgt" && ! linkok "$tgt" || chown $tgt_ownership $tgt
             fi
         fi
     done

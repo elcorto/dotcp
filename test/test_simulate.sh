@@ -11,12 +11,11 @@ trap test_cleanup EXIT STOP INT QUIT KILL ABRT TERM HUP
 
 src_dir=src
 prefix=dotcp_$(basename $0)
-tmp_base=/tmp
 dotcp_exe=$(readlink -f $(dirname $0)/../bin/dotcp)
 
-link_tgt=$(mktemp --tmpdir=$tmp_base -d ${prefix}_link_target_XXXXXXXX)
-deploy_dir=$(mktemp --tmpdir=$tmp_base -d ${prefix}_deploy_dir_XXXXXXXX)
-sim_deploy_dir=$(mktemp --tmpdir=$tmp_base -d ${prefix}_sim_deploy_dir_XXXXXXXX)
+link_tgt=$(tmpdir ${prefix}_link_target)
+deploy_dir=$(tmpdir ${prefix}_deploy_dir)
+sim_deploy_dir=$(tmpdir ${prefix}_sim_deploy_dir)
 
 # create fake deploy_dir (in real deploy: /home/user)
 echo initial_a > $deploy_dir/a

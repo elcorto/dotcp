@@ -273,7 +273,8 @@ main(){
 
                 src=$templ_render_dir/$(echo $_src | sed -r -e "s|$src_dr/||")
                 mkdir -p $(dirname $src)
-                ln -s $(echo $link_tgt | sed -re "s|__dotcp_home__|$HOME|") $src
+                ln -s $(echo $link_tgt | sed -r -e "s|__dotcp_home__|$HOME|" \
+                                                -e 's|/{1,}|/|g') $src
 
                 used_src_dr=$templ_render_dir
                 src_from_link_template=true

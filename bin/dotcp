@@ -265,6 +265,7 @@ main(){
 
         # render link templates where link target contains special
         # __dotcp_home__ placeholder
+        src_from_link_template=false
         if islink $_src; then
             link_tgt=$(readlink $_src)
             if echo $link_tgt | grep -q __dotcp_home__; then
@@ -279,7 +280,6 @@ main(){
             else
                 src=$_src
                 used_src_dr=$src_dr
-                src_from_link_template=false
             fi
         fi
 

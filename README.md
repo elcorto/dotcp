@@ -30,6 +30,8 @@ are written in POSIX shell code and are provided as git submodules
 * include/exclude files (`-i`/`-x`).
 * run as root (`-r`)
 * template support (e.g. for multi-machine workflows)
+* link templates (links pointing to targets containing `$HOME` on multiple
+  machines)
 
 
 # Usage
@@ -306,8 +308,6 @@ $ watch -n2 "dotcp -sv -i 'foo.conf'"
 $ vim $DOTCP_DOTFILES/user/path/to/foo.conf.dotcp_esh
 ```
 
-
-
 ### Dynamic including and excluding
 
 You can include/exclude files/dirs/links dynamically at deploy time based on
@@ -357,6 +357,30 @@ $ dotcp -x $(paste -sd '|' foo.exclude)
 
 So with a tiny bit of scripting, you have full flexibility.
 
+
+### Link templates
+
+If you have links in `$DOTCP_DOTFILES` pointing to an absolute path containing
+a home dir, such as
+
+```sh
+$DOTCP_DOTFILES/user/.vim/init.vim -> /home/user42/.vimrc
+```
+
+then this will break if you deploy on a machine where your username is
+different. Of course the link will be copied, since that's all `dotcp` does,
+but it will point to a non-existent target. To fix this for all target
+machines, you can replace `/home/user42` by a placeholder `__dotcp_home__`,
+which `dotcp` will replace by `$HOME` at deploy time on each machine.
+
+In your dotfiles location, do this once:
+
+```sh
+$ rm $DOTCP_DOTFILES/user/.vim/init.vim
+$ ln -s __dotcp_home__/.vimrc $DOTCP_DOTFILES/user/.vim/init.vim
+```
+
+See also `test/test_link_templates.sh`.
 
 # Scope and related tools
 

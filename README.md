@@ -72,6 +72,9 @@ A backup of each target is made if necessary (with suffix
 
 ```sh
 $ find ~/ -maxdepth 5 -wholename "*.bak-dotcp-*" | xargs rm -rv
+
+# or with https://github.com/sharkdp/fd
+$ fd -u -d 5 '.bak-dotcp-.*' ~/ | xargs rm -rv
 ```
 
 Since `dotcp` only considers files in `$DOTCP_DOTFILES/{user,root}`, you can

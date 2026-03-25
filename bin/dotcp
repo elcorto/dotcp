@@ -18,6 +18,7 @@ exclude=
 include=
 run_as_root=false
 mtime_mode=s
+watch_mode=false
 
 usage(){
     cat <<EOF
@@ -42,6 +43,7 @@ Options
          [default: s]
     -d : config files will be copied to <deploy_dir>/
          [default: \$HOME]
+    -w : watch mode, implies -s -v
     --sim-deploy-dir : temp dir for -s, default is auto-generated
 EOF
 }
@@ -84,7 +86,7 @@ cleanup(){
 }
 
 
-cmdline=$(getopt -o hcsS:kpevVd:x:i:rm: -lsim-deploy-dir: -- "$@")
+cmdline=$(getopt -o hcsS:kpevVd:x:i:rm:w -lsim-deploy-dir: -- "$@")
 eval set -- "$cmdline"
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -136,6 +138,10 @@ while [ $# -gt 0 ]; do
             mtime_mode="$(strip_quotes $2)"
             shift
             ;;
+        -w)
+            watch_mode=true
+            shift
+            ;;
         -h)
             usage
             exit 0
@@ -157,7 +163,8 @@ if $run_as_root; then
     #   dotcp -r -s -i foo -pv
     # gets transformed by getopt to
     #   cmdline="-r -s -i 'foo' -p -v --"
-    # We remove "-r" and the final "--" and call us again with sudo. Cool, eh?
+    # We remove "-r" and the final "--" and call us ($(readlink -f $0)) again
+    # with sudo. Cool, eh?
     #
     # By default, all string args are single-quoted in that case by getopt.
     # There is an option to turn that off, but that causes other problems, so we
@@ -174,12 +181,20 @@ if $run_as_root; then
     #   $src_dr_base/user
     #   '/path/to/foo'/user
     # which raises an error. That's why we apply strip_quotes to all string
-    # args.
+    # args when parsing the command line above.
     sudo -A --preserve-env=DOTCP_DOTFILES $(readlink -f $0) \
         $(echo "$cmdline" | sed -re 's/(.*) --/\1/; s/-r//')
     exit 0
 fi
 
+if $watch_mode; then
+    # Same trick as for run_as_root: call us again with watch(1) and modified
+    # cmdline. Remove -w (watch_mode) as well as -sv if the user passed that.
+    # Make sure to call us with -sv though.
+    watch -n2 -- $(readlink -f $0) -sv \
+        $(echo "$cmdline" | sed -re 's/(.*) --/\1/; s/-s//; s/-v//; s/-w//')
+    exit 0
+fi
 
 main(){
     [ -n "$include" -a -n "$exclude" ] && err "use either -i or -x, not both"

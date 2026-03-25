@@ -24,9 +24,9 @@ are written in POSIX shell code and are provided as git submodules
 * check for file updates based on file hashes
 * backup of target files before updates
 * simulate what would be updated (`-s`)
-* copy target updates back to the dotfiles location (`-c`, simulate with
-  `-sc`)
 * show diffs between dotfiles location and target (`-sv` or `-spv`)
+* copy target updates back to the dotfiles location (`-c`, simulate with
+  `-sc`, watch mode `-w` for templates)
 * include/exclude files (`-i`/`-x`).
 * run as root (`-r`)
 * template support (e.g. for multi-machine workflows)
@@ -106,10 +106,13 @@ Options
          [default: s]
     -d : config files will be copied to <deploy_dir>/
          [default: $HOME]
+    -w : watch mode, implies -s -v
     --sim-deploy-dir : temp dir for -s, default is auto-generated
 ```
 
 ## Examples
+
+### Simulate
 
 Simulate (`-s`) what would be copied:
 
@@ -142,21 +145,35 @@ target file changes. Use `-m a` to determine old/new based on file modification
 times. Note that `-m` only affects diff display when using `-v`, not what
 `dotcp` does, which is just copying files.
 
+### Add target changes to dotfiles
+
 If you have changed target files and need to add the changes to the dotfiles
-location, use `-c` ("copy back"). Show commands to copy changed target files
-back to the dotfiles location (i.e. the reverse of installing them):
+location, use `-c` ("copy back"). Use simulate (`-s`) and `-c` to show the
+commands which would be executed to copy changed target files back to the
+dotfiles location (i.e. the reverse of installing them):
 
 ```sh
 $ dotcp -sc
 ```
 
-and actually execute them (remove simulate). If `$DOTCP_DOTFILES` is a git
-repo, you probably want to check the diff and later commit the change.
+and actually execute them (remove simulate).
 
 ```sh
 $ dotcp -c
+```
+
+If `$DOTCP_DOTFILES` is a git repo, you probably want to check the diff and
+later commit the change.
+
+```sh
 $ git -C $DOTCP_DOTFILES diff
 ```
+
+For templates, there is special option (`-w`, watch mode), see the [templates
+section](#templates).
+
+
+### Include and exclude
 
 Include or exclude files/dirs/links based on extended regexes (`grep -E`). Use
 `dotcp -s` first and then choose a regex. Often, very short regexes are enough
@@ -178,13 +195,16 @@ $ dotcp -c -i 'ssh'
 $ git -C $DOTCP_DOTFILES diff
 ```
 
-Run as root. This is a shorthand for
-`sudo -A --preserve-env=DOTCP_DOTFILES /path/to/dotcp ...` (`-A` b/c we
-like `SUDO_ASKPASS`):
+### Run as root
 
 ```sh
 $ dotcp -r
 ```
+
+is a shorthand for
+`sudo -A --preserve-env=DOTCP_DOTFILES /path/to/dotcp ...` (`-A` b/c we
+like `SUDO_ASKPASS`):
+
 
 ## Dotfiles location layout
 
@@ -305,7 +325,9 @@ using two shells.
 
 ```sh
 # shell 1: watch diff to target
-$ watch -n2 "dotcp -sv -i 'foo.conf'"
+$ watch -n2 -- "dotcp -sv -i 'foo.conf'"
+# or the same built into dotcp: watch mode (-w), implies -sv
+$ dotcp -w -i 'foo.conf'
 
 # shell 2: modify template until there is no diff
 $ vim $DOTCP_DOTFILES/user/path/to/foo.conf.dotcp_esh
